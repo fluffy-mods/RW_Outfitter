@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Infusion;
 using RimWorld;
 using Verse;
 
@@ -143,17 +142,17 @@ namespace Outfitter
                         }
                     }
 
-                    // add all stat modifiers from all infusions
-                    foreach ( InfusionDef infusion in DefDatabase<InfusionDef>.AllDefsListForReading )
-                    {
-                        foreach ( KeyValuePair<StatDef, StatMod> mod in infusion.stats )
-                        {
-                            if ( !_allApparelStats.Contains( mod.Key ) )
-                            {
-                                _allApparelStats.Add( mod.Key );
-                            }
-                        }
-                    }
+                    //// add all stat modifiers from all infusions
+                    //foreach ( InfusionDef infusion in DefDatabase<InfusionDef>.AllDefsListForReading )
+                    //{
+                    //    foreach ( KeyValuePair<StatDef, StatMod> mod in infusion.stats )
+                    //    {
+                    //        if ( !_allApparelStats.Contains( mod.Key ) )
+                    //        {
+                    //            _allApparelStats.Add( mod.Key );
+                    //        }
+                    //    }
+                    //}
                 }
                 return _allApparelStats;
             }
@@ -190,18 +189,18 @@ namespace Outfitter
             // start score at 1
             float score = 1;
 
-            // make infusions ready
-            InfusionSet infusions;
-            bool infused = false;
-            StatMod mod;
-            InfusionDef prefix = null;
-            InfusionDef suffix = null;
-            if ( apparel.TryGetInfusions( out infusions ) )
-            {
-                infused = true;
-                prefix = infusions.Prefix.ToInfusionDef();
-                suffix = infusions.Suffix.ToInfusionDef();
-            }
+            //// make infusions ready
+            //InfusionSet infusions;
+            //bool infused = false;
+            //StatMod mod;
+            //InfusionDef prefix = null;
+            //InfusionDef suffix = null;
+            //if ( apparel.TryGetInfusions( out infusions ) )
+            //{
+            //    infused = true;
+            //    prefix = infusions.Prefix.ToInfusionDef();
+            //    suffix = infusions.Suffix.ToInfusionDef();
+            //}
 
             // add values for each statdef modified by the apparel
                 foreach( ApparelStatCache.StatPriority statPriority in pawn.GetApparelStatCache().StatCache )
@@ -236,26 +235,26 @@ namespace Outfitter
                     //debug.AppendLine( statWeightPair.Key.LabelCap + ": " + score );
                 }
 
-                // infusions
-                if( infused ) { 
-                    // prefix
-                    if ( !infusions.PassPre &&
-                         prefix.GetStatValue( statPriority.Stat, out mod ) )
-                    {
-                        score += mod.offset * statPriority.Weight;
-                        score += score * ( mod.multiplier - 1 ) * statPriority.Weight;
+                //// infusions
+                //if( infused ) { 
+                //    // prefix
+                //    if ( !infusions.PassPre &&
+                //         prefix.GetStatValue( statPriority.Stat, out mod ) )
+                //    {
+                //        score += mod.offset * statPriority.Weight;
+                //        score += score * ( mod.multiplier - 1 ) * statPriority.Weight;
 
-                        //debug.AppendLine( statWeightPair.Key.LabelCap + " infusion: " + score );
-                    }
-                    if ( !infusions.PassSuf &&
-                         suffix.GetStatValue( statPriority.Stat, out mod ) )
-                    {
-                        score += mod.offset * statPriority.Weight;
-                        score += score * ( mod.multiplier - 1 ) * statPriority.Weight;
+                //        //debug.AppendLine( statWeightPair.Key.LabelCap + " infusion: " + score );
+                //    }
+                //    if ( !infusions.PassSuf &&
+                //         suffix.GetStatValue( statPriority.Stat, out mod ) )
+                //    {
+                //        score += mod.offset * statPriority.Weight;
+                //        score += score * ( mod.multiplier - 1 ) * statPriority.Weight;
 
-                        //debug.AppendLine( statWeightPair.Key.LabelCap + " infusion: " + score );
-                    }
-                }
+                //        //debug.AppendLine( statWeightPair.Key.LabelCap + " infusion: " + score );
+                //    }
+                //}
             }
 
             // offset for apparel hitpoints 
@@ -276,32 +275,32 @@ namespace Outfitter
             float insulationHeat = apparel.GetStatValue( StatDefOf.Insulation_Heat );
 
             // offsets on apparel infusions
-            if( infused )
-            {
-                // prefix
-                if( !infusions.PassPre &&
-                     prefix.GetStatValue( StatDefOf.ComfyTemperatureMin, out mod ) )
-                {
-                    insulationCold += mod.offset;
-                }
-                if( !infusions.PassPre &&
-                     prefix.GetStatValue( StatDefOf.ComfyTemperatureMax, out mod ) )
-                {
-                    insulationHeat += mod.offset;
-                }
+            //if( infused )
+            //{
+            //    // prefix
+            //    if( !infusions.PassPre &&
+            //         prefix.GetStatValue( StatDefOf.ComfyTemperatureMin, out mod ) )
+            //    {
+            //        insulationCold += mod.offset;
+            //    }
+            //    if( !infusions.PassPre &&
+            //         prefix.GetStatValue( StatDefOf.ComfyTemperatureMax, out mod ) )
+            //    {
+            //        insulationHeat += mod.offset;
+            //    }
 
-                // suffix
-                if( !infusions.PassSuf &&
-                     suffix.GetStatValue( StatDefOf.ComfyTemperatureMin, out mod ) )
-                {
-                    insulationCold += mod.offset;
-                }
-                if( !infusions.PassSuf &&
-                     suffix.GetStatValue( StatDefOf.ComfyTemperatureMax, out mod ) )
-                {
-                    insulationHeat += mod.offset;
-                }
-            }
+            //    // suffix
+            //    if( !infusions.PassSuf &&
+            //         suffix.GetStatValue( StatDefOf.ComfyTemperatureMin, out mod ) )
+            //    {
+            //        insulationCold += mod.offset;
+            //    }
+            //    if( !infusions.PassSuf &&
+            //         suffix.GetStatValue( StatDefOf.ComfyTemperatureMax, out mod ) )
+            //    {
+            //        insulationHeat += mod.offset;
+            //    }
+            //}
 
             // if this gear is currently worn, we need to make sure the contribution to the pawn's comfy temps is removed so the gear is properly scored
             if ( pawn.apparel.WornApparel.Contains( apparel ) )

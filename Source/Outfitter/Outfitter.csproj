@@ -42,10 +42,6 @@
       <HintPath>..\..\..\EdBInterface\Assemblies\EdBInterface.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Infusion">
-      <HintPath>..\..\..\..\..\ModVarietyPack\Mods\LT_Infusion\Assemblies\Infusion.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
