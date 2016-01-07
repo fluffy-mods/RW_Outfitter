@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+  <PreferedTemperature>Temperature range</PreferedTemperature>
+  <PreferredStats>Stat priorities</PreferredStats>
+  <StatPriorityReset>Reset priority for {0} to work priorities</StatPriorityReset>
+  <StatPriorityDelete>Remove priority for {0}</StatPriorityDelete>
+  <StatPriorityAdd>Add new priority</StatPriorityAdd>
+  <TemperatureRangeReset>Reset temperature range to seasonal temperature</TemperatureRangeReset>
+  <OutfitterTab>Outfitter</OutfitterTab>
+</LanguageData>

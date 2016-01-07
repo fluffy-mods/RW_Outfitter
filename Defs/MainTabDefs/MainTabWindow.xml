@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<MainTabDefs>
+
+  <MainTabDef>
+    <defName>Outfitter</defName>
+    <label>outfitter</label>
+    <description>Outfits wanted!</description>
+    <windowClass>Outfitter.MainTabWindow_Outfitter</windowClass>
+    <order>24</order>
+  </MainTabDef>
+
+</MainTabDefs>
