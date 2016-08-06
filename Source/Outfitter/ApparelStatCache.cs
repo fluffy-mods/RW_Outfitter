@@ -106,7 +106,7 @@ namespace Outfitter
                 // get desired temperatures
                 if ( !targetTemperaturesOverride )
                 {
-                    _targetTemperatures = new FloatRange( Math.Max( GenTemperature.SeasonalTemp - 10f, ApparelStatsHelper.MinMaxTemperatureRange.min),
+                    _targetTemperatures = new FloatRange( Math.Max( GenTemperature.SeasonalTemp - 15f, ApparelStatsHelper.MinMaxTemperatureRange.min),
                                                           Math.Min( GenTemperature.SeasonalTemp + 10f, ApparelStatsHelper.MinMaxTemperatureRange.max) );
                 }
                 _temperatureWeight = GenTemperature.SeasonAcceptableFor( _pawn.def ) ? 1f : 5f;
@@ -136,7 +136,7 @@ namespace Outfitter
             if ( stat.Assignment == StatAssignment.Manual )
             {
                 buttonTooltip = "StatPriorityDelete".Translate( stat.Stat.LabelCap );
-                if( Widgets.ImageButton( buttonRect, ITab_Pawn_Outfitter.deleteButton ) )
+                if( Widgets.ButtonImage( buttonRect, ITab_Pawn_Outfitter.deleteButton ) )
                 {
                     stat.Delete( pawn );
                     stop_ui = true;
@@ -146,7 +146,7 @@ namespace Outfitter
             if ( stat.Assignment == StatAssignment.Override )
             {
                 buttonTooltip = "StatPriorityReset".Translate( stat.Stat.LabelCap );
-                if ( Widgets.ImageButton( buttonRect, ITab_Pawn_Outfitter.resetButton ) )
+                if ( Widgets.ButtonImage( buttonRect, ITab_Pawn_Outfitter.resetButton ) )
                 {
                     stat.Reset( pawn );
                     stop_ui = true;

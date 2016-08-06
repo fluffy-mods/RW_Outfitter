@@ -118,6 +118,7 @@ namespace Outfitter
         }
 
         private static List<StatDef> _allApparelStats;
+
         public static List<StatDef> AllStatDefsModifiedByAnyApparel
         {
             get

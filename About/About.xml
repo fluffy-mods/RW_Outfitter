@@ -3,7 +3,7 @@
 	<name>Outfitter</name>
 	<author>Fluffy</author>
 	<url></url>
-	<targetVersion>Alpha 12d</targetVersion>
+	<targetVersion>0.14.1234</targetVersion>
 	<description>Allows pawns to factor in all kinds of gear stat offsets other than just armor.
 	 - Defaults to sensible priorities based on work types assigned and map seasonal temperatures.
 	 - Allows you to finetune, add and/or remove priorities.

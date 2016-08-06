@@ -65,7 +65,7 @@ namespace Outfitter
 
             if ( pawnStatCache.targetTemperaturesOverride )
             {
-                if ( Widgets.ImageButton( tempResetRect, resetButton ) )
+                if ( Widgets.ButtonImage( tempResetRect, resetButton ) )
                 {
                     pawnStatCache.targetTemperaturesOverride = false;
                     pawnStatCache.UpdateTemperatureIfNecessary( true );
@@ -84,7 +84,7 @@ namespace Outfitter
 
             // add button
             Rect addStatRect = new Rect( statsHeaderRect.xMax - 16f, statsHeaderRect.yMin + 10f, 16f, 16f );
-            if( Widgets.ImageButton( addStatRect, addButton ) )
+            if( Widgets.ButtonImage( addStatRect, addButton ) )
             {
                 List<FloatMenuOption> options = new List<FloatMenuOption>();
                 foreach( StatDef def in SelPawn.NotYetAssignedStatDefs() )
@@ -178,7 +178,7 @@ namespace Outfitter
                 }
 
                 // of this colony
-                if ( selectedPawn.Faction != Faction.OfColony )
+                if ( selectedPawn.Faction != Faction.OfPlayer )
                 {
                     return false;
                 }
