@@ -9,5 +9,8 @@
         <PostLoadInjectors>            
             <li>Outfitter.InjectTab</li>
         </PostLoadInjectors>
+    <SpecialInjectors>
+      <li>Outfitter.ITabInjector</li>
+    </SpecialInjectors>
     </CommunityCoreLibrary.ModHelperDef>
 </Defs>

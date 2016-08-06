@@ -52,7 +52,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApparelStatCache.cs" />
+    <None Include="AutoEquip\Dialog_PawnApparelComparer.cs" />
+    <Compile Include="AutoEquip\Dialog_PawnApparelDetail.cs" />
+    <Compile Include="AutoEquip\TexButton.cs" />
     <Compile Include="Bootstrap.cs" />
+    <Compile Include="AutoEquip\ITab_Inventory_AutoEquip.cs" />
     <Compile Include="ITab_Pawn_Outfitter.cs" />
     <Compile Include="MainTabWindow_Outfitter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
