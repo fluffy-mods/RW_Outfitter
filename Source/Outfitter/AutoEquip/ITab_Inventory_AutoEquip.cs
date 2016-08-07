@@ -7,7 +7,7 @@ using Verse;
 using Verse.AI;
 using Verse.Sound;
 
-namespace Outfitter
+namespace AutoEquip
 {
     public class ITab_Pawn_GearModded : ITab
     {

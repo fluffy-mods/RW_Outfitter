@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+
+  <PreferedTemperature>Temperature range</PreferedTemperature>
+  <PreferredStats>Stat priorities</PreferredStats>
+  <StatPriorityReset>Reset priority for {0} to work priorities</StatPriorityReset>
+  <StatPriorityDelete>Remove priority for {0}</StatPriorityDelete>
+  <StatPriorityAdd>Add new priority</StatPriorityAdd>
+  <TemperatureRangeReset>Reset temperature range to seasonal temperature</TemperatureRangeReset>
+  <AutoEquipTab>AutoEquip</AutoEquipTab>
+
+
+
+  <AddWorkingStats>Add Working Stats</AddWorkingStats>
+  <ToWear>To Wear</ToWear>
+  <ToDrop>To Drop</ToDrop>
+  <AverageStat>Pawn Stat Offset</AverageStat>
+  <AverageWorkStat>Pawn Work Offset</AverageWorkStat>
+  <AutoEquipHitPoints>Hit Points Modifier</AutoEquipHitPoints>
+  <AutoEquipTemperature>Outdoor Temperature Modifier</AutoEquipTemperature>
+  <AutoEquipTotal>Apparel Total Stat</AutoEquipTotal>
+  <AutoEquipArmor>Protection Score</AutoEquipArmor>
+  <BasicStatusOfApparel>Basic Apparel Offset</BasicStatusOfApparel>
+  <AutoEquipGlobalSelection>Global Selection</AutoEquipGlobalSelection>
+  <AppendIndividualStats>Append Individual Status</AppendIndividualStats>
+  <AutoEquipStatus>Status...</AutoEquipStatus>
+  <PreferedTemperature>Prefered Temperature</PreferedTemperature>
+  <EquipmentAndInventory>Equipment And Inventory</EquipmentAndInventory>
+  <WornApparel>Worn Apparel</WornApparel>
+</LanguageData>

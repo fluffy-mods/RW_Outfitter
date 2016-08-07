@@ -1,4 +1,4 @@
-﻿// Outfitter/ApparelStatCache.cs
+﻿// AutoEquip/ApparelStatCache.cs
 // 
 // Copyright Karel Kroeze, 2016.
 // 
@@ -6,11 +6,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace Outfitter
+namespace AutoEquip
 {
     public enum StatAssignment
     {
@@ -109,6 +110,19 @@ namespace Outfitter
                     _targetTemperatures = new FloatRange(Math.Max(GenTemperature.SeasonalTemp - 15f, ApparelStatsHelper.MinMaxTemperatureRange.min),
                                                           Math.Min(GenTemperature.SeasonalTemp + 10f, ApparelStatsHelper.MinMaxTemperatureRange.max));
                 }
+
+                if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
+                {
+                    _targetTemperatures.min += 20;
+                    _targetTemperatures.max += 20;
+                }
+
+                if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
+                {
+                    _targetTemperatures.min -= 20;
+                    _targetTemperatures.max -= 20;
+                }
+
                 _temperatureWeight = GenTemperature.SeasonAcceptableFor(_pawn.def) ? 1f : 5f;
             }
         }
@@ -136,7 +150,7 @@ namespace Outfitter
             if (stat.Assignment == StatAssignment.Manual)
             {
                 buttonTooltip = "StatPriorityDelete".Translate(stat.Stat.LabelCap);
-                if (Widgets.ButtonImage(buttonRect, ITab_Pawn_Outfitter.deleteButton))
+                if (Widgets.ButtonImage(buttonRect, TexButton.deleteButton))
                 {
                     stat.Delete(pawn);
                     stop_ui = true;
@@ -146,7 +160,7 @@ namespace Outfitter
             if (stat.Assignment == StatAssignment.Override)
             {
                 buttonTooltip = "StatPriorityReset".Translate(stat.Stat.LabelCap);
-                if (Widgets.ButtonImage(buttonRect, ITab_Pawn_Outfitter.resetButton))
+                if (Widgets.ButtonImage(buttonRect, TexButton.resetButton))
                 {
                     stat.Reset(pawn);
                     stop_ui = true;

@@ -1,4 +1,4 @@
-﻿// Outfitter/ApparelStatsHelper.cs
+﻿// AutoEquip/ApparelStatsHelper.cs
 // 
 // Copyright Karel Kroeze, 2016.
 // 
@@ -10,7 +10,7 @@ using System.Linq;
 using RimWorld;
 using Verse;
 
-namespace Outfitter
+namespace AutoEquip
 {
     public static class ApparelStatsHelper
     {
@@ -45,8 +45,8 @@ namespace Outfitter
         public static Dictionary<StatDef, float> GetWeightedApparelStats(this Pawn pawn)
         {
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
-            dict.Add(StatDefOf.ArmorRating_Blunt, 0.25f);
-            dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
+   //       dict.Add(StatDefOf.ArmorRating_Blunt, 0.25f);
+   //       dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
 
             // Adds manual prioritiy adjustments 
 
@@ -251,8 +251,9 @@ namespace Outfitter
 
                     if (statValue < 1)
                     {
-                        statValue = 1 / statValue;  // inverts negative values and 1:x
-                        statStrength = statStrength * -1;
+                        statValue *= -1;
+                        statValue += 1;
+                        statStrength *= -1;
                     }
 
                     score += statValue * statStrength;
@@ -301,16 +302,26 @@ namespace Outfitter
                 //    }
                 //}
             }
-
+            score += 0.125f * ApparelStatsHelper.ApparelScoreRaw_ProtectionBaseStat(apparel);
             // offset for apparel hitpoints 
             if (apparel.def.useHitPoints)
             {
-                // durability on 0-1 scale
-                float x = apparel.HitPoints / (float)apparel.MaxHitPoints;
-                score *= HitPointsPercentScoreFactorCurve.Evaluate(x);
+                float x = (float)apparel.HitPoints / (float)apparel.MaxHitPoints;
+                score *= ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
             }
+            score += ApparelStatsHelper.ApparelScoreRaw_Temperature(apparel, pawn);
 
-            // temperature
+            var temperatureScoreOffset = ApparelScoreRaw_Temperature(apparel, pawn);
+
+            // adjust for temperatures
+            score += temperatureScoreOffset / 10f;
+
+            return score;
+        }
+
+        public static float ApparelScoreRaw_Temperature(Apparel apparel, Pawn pawn)
+        {
+// temperature
             FloatRange targetTemperatures = pawn.GetApparelStatCache().TargetTemperatures;
             float minComfyTemperature = pawn.GetStatValue(StatDefOf.ComfyTemperatureMin);
             float maxComfyTemperature = pawn.GetStatValue(StatDefOf.ComfyTemperatureMax);
@@ -357,13 +368,15 @@ namespace Outfitter
             // now for the interesting bit.
             float temperatureScoreOffset = 0f;
             float tempWeight = pawn.GetApparelStatCache().TemperatureWeight;
-            float neededInsulation_Cold = targetTemperatures.TrueMin - minComfyTemperature;  // isolation_cold is given as negative numbers < 0 means we're underdressed
-            float neededInsulation_Warmth = targetTemperatures.TrueMax - maxComfyTemperature;  // isolation_warm is given as positive numbers.
+            float neededInsulation_Cold = targetTemperatures.TrueMin - minComfyTemperature;
+                // isolation_cold is given as negative numbers < 0 means we're underdressed
+            float neededInsulation_Warmth = targetTemperatures.TrueMax - maxComfyTemperature;
+                // isolation_warm is given as positive numbers.
 
             // currently too cold
             if (neededInsulation_Cold < 0)
             {
-                temperatureScoreOffset += -insulationCold * tempWeight;
+                temperatureScoreOffset += -insulationCold*tempWeight;
             }
             // currently warm enough
             else
@@ -371,14 +384,14 @@ namespace Outfitter
                 // this gear would make us too cold
                 if (insulationCold > neededInsulation_Cold)
                 {
-                    temperatureScoreOffset += (neededInsulation_Cold - insulationCold) * tempWeight;
+                    temperatureScoreOffset += (neededInsulation_Cold - insulationCold)*tempWeight;
                 }
             }
 
             // currently too warm
             if (neededInsulation_Warmth > 0)
             {
-                temperatureScoreOffset += insulationHeat * tempWeight;
+                temperatureScoreOffset += insulationHeat*tempWeight;
             }
             // currently cool enough
             else
@@ -386,15 +399,19 @@ namespace Outfitter
                 // this gear would make us too warm
                 if (insulationHeat < neededInsulation_Warmth)
                 {
-                    temperatureScoreOffset += -(neededInsulation_Warmth - insulationHeat) * tempWeight;
+                    temperatureScoreOffset += -(neededInsulation_Warmth - insulationHeat)*tempWeight;
                 }
             }
-
-            // adjust for temperatures
-            score += temperatureScoreOffset / 10f;
-
-            return score;
+            return temperatureScoreOffset;
         }
+
+        public static float ApparelScoreRaw_ProtectionBaseStat(Apparel ap)
+        {
+            float num = 1f;
+            float num2 = ap.GetStatValue(StatDefOf.ArmorRating_Sharp, true) + ap.GetStatValue(StatDefOf.ArmorRating_Blunt, true) * 0.75f;
+            return num + num2 * 1.25f;
+        }
+
 
         public static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfWorkType(WorkTypeDef worktype)
         {

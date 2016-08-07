@@ -4,7 +4,7 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace Outfitter
+namespace AutoEquip
 {
     public class Dialog_PawnApparelComparer : Window
     {

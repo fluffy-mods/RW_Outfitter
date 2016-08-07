@@ -2,15 +2,14 @@
 <Defs>
   <CommunityCoreLibrary.ModHelperDef>
 
-        <defName>Outfitter</defName> 
-        <ModName>Outfitter</ModName>
-      <minCCLversion>0.14.0</minCCLversion>
-
-        <PostLoadInjectors>            
-            <li>Outfitter.InjectTab</li>
-        </PostLoadInjectors>
+    <defName>AutoEquip</defName>
+    <ModName>AutoEquip</ModName>
+    <minCCLversion>0.14.0</minCCLversion>
+    <PostLoadInjectors>
+      <li>AutoEquip.InjectTab</li>
+    </PostLoadInjectors>
     <SpecialInjectors>
-      <li>Outfitter.ITabInjector</li>
+      <li>AutoEquip.ITabInjector</li>
     </SpecialInjectors>
-    </CommunityCoreLibrary.ModHelperDef>
+  </CommunityCoreLibrary.ModHelperDef>
 </Defs>

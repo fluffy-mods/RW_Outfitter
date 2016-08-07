@@ -1,0 +1,21 @@
+﻿using System;
+using UnityEngine;
+
+namespace Verse
+{
+    [StaticConstructorOnStartup]
+    internal class LocalTextures
+    {
+        public static readonly Texture2D Info = ContentFinder<Texture2D>.Get("UI/Buttons/InfoButton", true);
+
+        public static readonly Texture2D Drop = ContentFinder<Texture2D>.Get("UI/Buttons/Drop", true);
+
+        public static readonly Texture2D FloatRangeSliderTex = ContentFinder<Texture2D>.Get("UI/Widgets/RangeSlider", true);
+
+        public static Texture2D ResetButton = ContentFinder<Texture2D>.Get("reset");
+
+        public static Texture2D DeleteButton = ContentFinder<Texture2D>.Get("delete");
+
+        public static Texture2D AddButton = ContentFinder<Texture2D>.Get("add");
+    }
+}

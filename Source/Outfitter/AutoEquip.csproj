@@ -7,8 +7,8 @@
     <ProjectGuid>{674578FF-B7C7-4142-A8E3-CBB52BD8B996}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Outfitter</RootNamespace>
-    <AssemblyName>Outfitter</AssemblyName>
+    <RootNamespace>AutoEquip</RootNamespace>
+    <AssemblyName>AutoEquip</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
@@ -57,8 +57,9 @@
     <Compile Include="AutoEquip\TexButton.cs" />
     <Compile Include="Bootstrap.cs" />
     <Compile Include="AutoEquip\ITab_Inventory_AutoEquip.cs" />
-    <Compile Include="ITab_Pawn_Outfitter.cs" />
+    <Compile Include="AutoEquip\ITab_Pawn_AutoEquip.cs" />
     <Compile Include="MainTabWindow_Outfitter.cs" />
+    <Compile Include="ModInitializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ApparelStatsHelper.cs" />
     <Compile Include="Widgets_FloatRange.cs" />
@@ -66,12 +67,16 @@
   <ItemGroup>
     <Content Include="..\..\About\About.xml">
       <Link>About.xml</Link>
-    </Content>
-    <Content Include="..\..\About\Version.xml">
-      <Link>Version.xml</Link>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="..\..\Defs\ModHelperDefs\ModHelperDef.xml">
       <Link>ModHelperDef.xml</Link>
+    </Content>
+    <Content Include="..\..\Defs\ThingDefs\Initializer.xml">
+      <Link>AutoEquip\Initializer.xml</Link>
+    </Content>
+    <Content Include="..\..\Languages\English\Keyed\AutoEquip.xml">
+      <Link>AutoEquip\AutoEquip.xml</Link>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -5,20 +5,17 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace Outfitter
+namespace AutoEquip
 {
-    public class ITab_Pawn_Outfitter : ITab
+    public class ITab_Pawn_AutoEquip : ITab
     {
         private Vector2 _scrollPosition = Vector2.zero;
 
-        public static Texture2D resetButton = ContentFinder<Texture2D>.Get("reset"),
-                                deleteButton = ContentFinder<Texture2D>.Get("delete"),
-                                addButton = ContentFinder<Texture2D>.Get("add");
 
-        public ITab_Pawn_Outfitter()
+        public ITab_Pawn_AutoEquip()
         {
             size = new Vector2(432f, 600f);
-            labelKey = "OutfitterTab";
+            labelKey = "AutoEquipTab";
         }
 
         protected override void FillTab()
@@ -64,7 +61,7 @@ namespace Outfitter
 
             if (pawnStatCache.targetTemperaturesOverride)
             {
-                if (Widgets.ButtonImage(tempResetRect, resetButton))
+                if (Widgets.ButtonImage(tempResetRect, TexButton.resetButton))
                 {
                     pawnStatCache.targetTemperaturesOverride = false;
                     pawnStatCache.UpdateTemperatureIfNecessary(true);
@@ -83,7 +80,7 @@ namespace Outfitter
 
             // add button
             Rect addStatRect = new Rect(statsHeaderRect.xMax - 16f, statsHeaderRect.yMin + 10f, 16f, 16f);
-            if (Widgets.ButtonImage(addStatRect, addButton))
+            if (Widgets.ButtonImage(addStatRect, TexButton.addButton))
             {
                 List<FloatMenuOption> options = new List<FloatMenuOption>();
                 foreach (StatDef def in SelPawn.NotYetAssignedStatDefs().OrderBy(i=> i.label.ToString()))

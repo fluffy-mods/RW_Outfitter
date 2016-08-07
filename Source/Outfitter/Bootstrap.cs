@@ -6,43 +6,28 @@ using CommunityCoreLibrary;
 using RimWorld;
 using Verse;
 
-namespace Outfitter
+namespace AutoEquip
 {
-  public class InjectDetour : SpecialInjector 
-  {
-     public override bool Inject()
-     {
-         // detour apparel selection methods
-         MethodInfo source = typeof (JobGiver_OptimizeApparel).GetMethod( "ApparelScoreGain",
-                                                                          BindingFlags.Static | BindingFlags.Public );
-         MethodInfo destination = typeof (ApparelStatsHelper).GetMethod( "ApparelScoreGain",
-                                                                         BindingFlags.Static | BindingFlags.Public );
-     
-         Detours.TryDetourFromTo( source, destination );
-            return true;
-
-        }
-    }
 
     public class InjectTab : SpecialInjector
     {
         public override bool Inject()
         {
             // inject ITab into all humanlikes
-            foreach ( ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading.Where( td => td.category == ThingCategory.Pawn && td.race.Humanlike ) )
+            foreach (ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading.Where(td => td.category == ThingCategory.Pawn && td.race.Humanlike))
             {
-                if( def.inspectorTabs == null || def.inspectorTabs.Count == 0 )
+                if (def.inspectorTabs == null || def.inspectorTabs.Count == 0)
                 {
                     def.inspectorTabs = new List<Type>();
                     def.inspectorTabsResolved = new List<ITab>();
                 }
-                if( def.inspectorTabs.Contains( typeof( ITab_Pawn_Outfitter ) ) )
+                if (def.inspectorTabs.Contains(typeof(ITab_Pawn_AutoEquip)))
                 {
                     return false;
                 }
 
-                def.inspectorTabs.Add( typeof( ITab_Pawn_Outfitter ) );
-                def.inspectorTabsResolved.Add( ITabManager.GetSharedInstance( typeof( ITab_Pawn_Outfitter ) ) );
+                def.inspectorTabs.Add(typeof(ITab_Pawn_AutoEquip));
+                def.inspectorTabsResolved.Add(ITabManager.GetSharedInstance(typeof(ITab_Pawn_AutoEquip)));
             }
 
             return true;
@@ -51,7 +36,6 @@ namespace Outfitter
 
     public class ITabInjector : SpecialInjector
     {
-        #region Methods
 
         public override bool Inject()
         {
@@ -95,6 +79,5 @@ namespace Outfitter
             return true;
         }
 
-        #endregion Methods
     }
 }

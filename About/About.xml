@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-	<name>Outfitter</name>
+	<name>AutoEquip</name>
 	<author>Fluffy</author>
 	<url></url>
 	<targetVersion>0.14.1234</targetVersion>
