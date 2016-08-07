@@ -139,9 +139,10 @@ namespace AutoEquip
             //    prefix = infusions.Prefix.ToInfusionDef();
             //    suffix = infusions.Suffix.ToInfusionDef();
             //}
+            SaveablePawn newPawnSaveable = MapComponent_AutoEquip.Get.GetApparelStatCache(_pawn);
 
             // add values for each statdef modified by the apparel
-            foreach (ApparelStatCache.StatPriority statPriority in _pawn.GetApparelStatCache().StatCache)
+            foreach (Saveable_Pawn_StatDef statPriority in newPawnSaveable.StatCache)
             {
                 // statbases, e.g. armor
                 if (statBases.Contains(statPriority.Stat))
@@ -271,13 +272,13 @@ namespace AutoEquip
 
             itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
 
-            if (sumStatsValue > 0 && _pawn.GetApparelStatCache().StatCache.Count > 0)
+            if (sumStatsValue > 0 && newPawnSaveable.StatCache.Count > 0)
             {
                 subtotal += ApparelStatsHelper.ApparelScoreRaw(_apparel, _pawn);
 
                 DrawLine(ref itemRect,
                 "AverageStat".Translate(), labelWidth,
-                (sumStatsValue / _pawn.GetApparelStatCache().StatCache.Count).ToString("N2"), baseValue,
+                (sumStatsValue /newPawnSaveable.StatCache.Count).ToString("N2"), baseValue,
                 ApparelStatsHelper.ApparelScoreRaw(_apparel,_pawn).ToString("N2"), multiplierWidth,
                 subtotal.ToString("N2"), finalValue);
 

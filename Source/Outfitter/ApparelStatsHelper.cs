@@ -14,7 +14,7 @@ namespace AutoEquip
 {
     public static class ApparelStatsHelper
     {
-        private static readonly Dictionary<Pawn, ApparelStatCache> PawnApparelStatCaches = new Dictionary<Pawn, ApparelStatCache>();
+   //     private static readonly Dictionary<Pawn, ApparelStatCache> PawnApparelStatCaches = new Dictionary<Pawn, ApparelStatCache>();
         private static readonly List<string> IgnoredWorktypeDefs = new List<string>();
 
         public static FloatRange MinMaxTemperatureRange => new FloatRange(-100, 100);
@@ -33,14 +33,6 @@ namespace AutoEquip
         //  new CurvePoint( 1f, 1f )
         };
 
-        public static ApparelStatCache GetApparelStatCache(this Pawn pawn)
-        {
-            if (!PawnApparelStatCaches.ContainsKey(pawn))
-            {
-                PawnApparelStatCaches.Add(pawn, new ApparelStatCache(pawn));
-            }
-            return PawnApparelStatCaches[pawn];
-        }
 
         public static Dictionary<StatDef, float> GetWeightedApparelStats(this Pawn pawn)
         {
@@ -189,9 +181,10 @@ namespace AutoEquip
 
         public static List<StatDef> NotYetAssignedStatDefs(this Pawn pawn)
         {
+            SaveablePawn newPawnSaveable = MapComponent_AutoEquip.Get.GetApparelStatCache(pawn);
             return
                 AllStatDefsModifiedByAnyApparel
-                    .Except(pawn.GetApparelStatCache().StatCache.Select(prio => prio.Stat))
+                    .Except(newPawnSaveable.StatCache.Select(prio => prio.Stat))
                     .ToList();
         }
 
@@ -232,7 +225,10 @@ namespace AutoEquip
             //}
 
             // add values for each statdef modified by the apparel
-            foreach (ApparelStatCache.StatPriority statPriority in pawn.GetApparelStatCache().StatCache)
+            SaveablePawn newPawnSaveable = MapComponent_AutoEquip.Get.GetApparelStatCache(pawn);
+
+            foreach (Saveable_Pawn_StatDef statPriority in newPawnSaveable.StatCache)
+            //foreach (ApparelStatCache.StatPriority statPriority in pawn.GetApparelStatCache().StatCache)
             {
                 // statbases, e.g. armor
                 if (statBases.Contains(statPriority.Stat))
@@ -321,8 +317,10 @@ namespace AutoEquip
 
         public static float ApparelScoreRaw_Temperature(Apparel apparel, Pawn pawn)
         {
-// temperature
-            FloatRange targetTemperatures = pawn.GetApparelStatCache().TargetTemperatures;
+            // temperature
+            SaveablePawn newPawnSaveable = MapComponent_AutoEquip.Get.GetApparelStatCache(pawn);
+
+            FloatRange targetTemperatures = newPawnSaveable.TargetTemperatures;
             float minComfyTemperature = pawn.GetStatValue(StatDefOf.ComfyTemperatureMin);
             float maxComfyTemperature = pawn.GetStatValue(StatDefOf.ComfyTemperatureMax);
 
@@ -367,7 +365,7 @@ namespace AutoEquip
 
             // now for the interesting bit.
             float temperatureScoreOffset = 0f;
-            float tempWeight = pawn.GetApparelStatCache().TemperatureWeight;
+            float tempWeight = newPawnSaveable.TemperatureWeight;
             float neededInsulation_Cold = targetTemperatures.TrueMin - minComfyTemperature;
                 // isolation_cold is given as negative numbers < 0 means we're underdressed
             float neededInsulation_Warmth = targetTemperatures.TrueMax - maxComfyTemperature;
