@@ -25,7 +25,7 @@ namespace AutoEquip
         private List<StatPriority> _cache;
         private int _lastStatUpdate;
         private int _lastTempUpdate;
-        private readonly Pawn _pawn;
+        private Pawn _pawn;
         private FloatRange _targetTemperatures;
         public bool targetTemperaturesOverride;
         private float _temperatureWeight;
@@ -230,5 +230,6 @@ namespace AutoEquip
                 Assignment = StatAssignment.Automatic;
             }
         }
+
     }
 }

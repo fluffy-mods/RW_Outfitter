@@ -11,5 +11,8 @@
     <SpecialInjectors>
       <li>AutoEquip.ITabInjector</li>
     </SpecialInjectors>
+    <MapComponents>
+      <li>AutoEquip.MapComponent_AutoEquip</li>
+    </MapComponents>
   </CommunityCoreLibrary.ModHelperDef>
 </Defs>

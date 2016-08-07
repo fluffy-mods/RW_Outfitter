@@ -59,9 +59,12 @@
     <Compile Include="AutoEquip\ITab_Inventory_AutoEquip.cs" />
     <Compile Include="AutoEquip\ITab_Pawn_AutoEquip.cs" />
     <Compile Include="MainTabWindow_Outfitter.cs" />
+    <Compile Include="MapComponent_AutoEquip.cs" />
     <Compile Include="ModInitializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ApparelStatsHelper.cs" />
+    <Compile Include="Saveable_Pawn.cs" />
+    <Compile Include="Saveable_Pawn_StatDef.cs" />
     <Compile Include="Widgets_FloatRange.cs" />
   </ItemGroup>
   <ItemGroup>

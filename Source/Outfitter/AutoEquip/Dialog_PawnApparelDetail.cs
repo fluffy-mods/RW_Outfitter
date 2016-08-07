@@ -67,7 +67,7 @@ namespace AutoEquip
             Text.Font = GameFont.Small;
 
             Rect groupRect = windowRect;
-            groupRect.height -= 250f;
+            groupRect.height -= 150f;
             groupRect.yMin += 30f;
             GUI.BeginGroup(groupRect);
 
@@ -109,6 +109,8 @@ namespace AutoEquip
 
             Rect viewRect = new Rect(groupRect.xMin, groupRect.yMin, groupRect.width - 16f, (statBases.Count + equippedOffsets.Count) * Text.LineHeight * 1.2f + 16f);
 
+            if (viewRect.height > groupRect.height)
+                groupRect.height = viewRect.height;
 
             Rect listRect = viewRect.ContractedBy(4f);
 
@@ -226,6 +228,7 @@ namespace AutoEquip
             // EXPERIMENTAL
       
             Widgets.EndScrollView();
+            GUI.EndGroup();
 
             Widgets.DrawLineHorizontal(groupRect.xMin, groupRect.yMax, groupRect.width);
 
@@ -315,7 +318,6 @@ namespace AutoEquip
 
             GUI.color = Color.white;
             Text.Anchor = TextAnchor.UpperLeft;
-            GUI.EndGroup();
         }
 
         public static float GetEquippedStatValue(Apparel apparel, StatDef stat)
