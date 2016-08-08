@@ -259,12 +259,12 @@ namespace AutoEquip
                 "1.00", baseValue,
                 "", multiplierWidth,
                 score.ToString("N2"), finalValue);
-
-            score += ApparelStatCache.ApparelScoreRaw_Temperature(_apparel, _pawn);
+            
+            score *= conf.ApparelScoreRaw_InsulationColdAdjust(_apparel);
             itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
             DrawLine(ref itemRect, 
-                "AutoEquipTemperature".Translate(), labelWidth, 
-                ApparelStatCache.ApparelScoreRaw_Temperature(_apparel, _pawn).ToString("N2"), baseValue, 
+                "AutoEquipTemperature".Translate(), labelWidth,
+                conf.ApparelScoreRaw_InsulationColdAdjust(_apparel).ToString("N2"), baseValue, 
                 "", multiplierWidth, 
                 score.ToString("N2"), finalValue);
 
@@ -277,8 +277,8 @@ namespace AutoEquip
 
             DrawLine(ref itemRect,
                 "AutoEquipArmor".Translate(), labelWidth,
-                "+", baseValue,
-                armor.ToString("N2"), multiplierWidth,
+                armor.ToString("N2"), baseValue,
+                "", multiplierWidth,
                 score.ToString("N2"), finalValue);
 
             if (_apparel.def.useHitPoints)
@@ -290,7 +290,7 @@ namespace AutoEquip
 
                 DrawLine(ref itemRect,
                 "AutoEquipHitPoints".Translate(), labelWidth,
-                ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x).ToString("N2"), baseValue,
+                x.ToString("N2"), baseValue,
                 "", multiplierWidth,
                 score.ToString("N2"), finalValue);
             }

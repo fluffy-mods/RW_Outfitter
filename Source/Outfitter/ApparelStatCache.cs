@@ -28,6 +28,20 @@ namespace AutoEquip
         public int _lastStatUpdate;
         private int _lastTempUpdate;
         public bool targetTemperaturesOverride;
+        private static NeededWarmth _neededWarmth;
+
+        private static readonly SimpleCurve InsulationColdScoreFactorCurve_NeedWarm = new SimpleCurve
+         {
+             new CurvePoint(-30f, 8f),
+             new CurvePoint(0f, 1f)
+         };
+
+        private static readonly SimpleCurve InsulationWarmScoreFactorCurve_NeedCold = new SimpleCurve
+         {
+             new CurvePoint(30f, 8f),
+             new CurvePoint(0f, 1f),
+             new CurvePoint(-10, 0.1f)
+         };
 
         private float _temperatureWeight;
 
@@ -157,12 +171,14 @@ namespace AutoEquip
         //  private int _lastTempUpdate;
         //  private Pawn _pawn;
 
+
         public ApparelStatCache(Pawn pawn)
         {
             _pawn = pawn;
             _cache = new List<StatPriority>();
             _lastStatUpdate = -5000;
             _lastTempUpdate = -5000;
+            _neededWarmth = CalculateNeededWarmth(_pawn, GenDate.CurrentMonth);
         }
 
         public float ApparelScoreRaw(Apparel apparel, Pawn pawn)
@@ -281,14 +297,29 @@ namespace AutoEquip
                 float x = (float)apparel.HitPoints / (float)apparel.MaxHitPoints;
                 score *= ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
             }
-            score += ApparelScoreRaw_Temperature(apparel, pawn);
 
-            var temperatureScoreOffset = ApparelScoreRaw_Temperature(apparel, pawn);
-
-            // adjust for temperatures
-            score += temperatureScoreOffset / 10f;
+            score *= ApparelScoreRaw_InsulationColdAdjust(apparel);
 
             return score;
+        }
+
+        public float ApparelScoreRaw_InsulationColdAdjust(Apparel ap)
+        {
+            switch (_neededWarmth)
+            {
+                case NeededWarmth.Warm:
+                    {
+                        float statValueAbstract = ap.def.GetStatValueAbstract(StatDefOf.Insulation_Cold, null);
+                        return InsulationColdScoreFactorCurve_NeedWarm.Evaluate(statValueAbstract);
+                    }
+                case NeededWarmth.Cool:
+                    {
+                        float statValueAbstract = ap.def.GetStatValueAbstract(StatDefOf.Insulation_Heat, null);
+                        return InsulationWarmScoreFactorCurve_NeedCold.Evaluate(statValueAbstract);
+                    }
+                default:
+                    return 1;
+            }
         }
 
         public static float ApparelScoreRaw_Temperature(Apparel apparel, Pawn pawn)
@@ -516,5 +547,30 @@ namespace AutoEquip
                 Assignment = StatAssignment.Automatic;
             }
         }
+
+        public static NeededWarmth CalculateNeededWarmth(Pawn pawn, Month month)
+        {
+            float temperature = GenTemperature.AverageTemperatureAtWorldCoordsForMonth(Find.Map.WorldCoords, month);
+
+            if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
+            {
+                temperature += 20;
+            }
+
+            if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
+            {
+                temperature -= 20;
+            }
+
+
+            if (temperature < pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMin, null) - 10f)
+                return NeededWarmth.Warm;
+
+            if (temperature > pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMax, null) + 10f)
+                return NeededWarmth.Cool;
+
+            return NeededWarmth.Any;
+        }
+
     }
 }
