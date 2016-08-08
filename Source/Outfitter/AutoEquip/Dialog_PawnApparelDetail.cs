@@ -260,11 +260,11 @@ namespace AutoEquip
                 "", multiplierWidth,
                 score.ToString("N2"), finalValue);
             
-            score *= conf.ApparelScoreRaw_InsulationColdAdjust(_apparel);
+            score *= conf.ApparelScoreRaw_Temperature(_apparel, _pawn) / 10f;
             itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
             DrawLine(ref itemRect, 
                 "AutoEquipTemperature".Translate(), labelWidth,
-                conf.ApparelScoreRaw_InsulationColdAdjust(_apparel).ToString("N2"), baseValue, 
+                (conf.ApparelScoreRaw_Temperature(_apparel, _pawn)/10f).ToString("N2"), baseValue, 
                 "", multiplierWidth, 
                 score.ToString("N2"), finalValue);
 

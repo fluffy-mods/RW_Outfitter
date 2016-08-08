@@ -65,8 +65,8 @@ namespace AutoEquip
                 if (Widgets.ButtonImage(tempResetRect, TexButton.resetButton))
                 {
                     pawnStatCache.targetTemperaturesOverride = false;
-                    var saveablePawn = MapComponent_AutoEquip.Get.GetCache(SelPawn);
-                    saveablePawn.targetTemperaturesOverride = false;
+               //   var saveablePawn = MapComponent_AutoEquip.Get.GetCache(SelPawn);
+               //     saveablePawn.targetTemperaturesOverride = false;
                     pawnStatCache.UpdateTemperatureIfNecessary(true);
                 }
                 TooltipHandler.TipRegion(tempResetRect, "TemperatureRangeReset".Translate());

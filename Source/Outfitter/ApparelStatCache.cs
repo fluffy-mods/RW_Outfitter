@@ -56,8 +56,6 @@ namespace AutoEquip
 
         private FloatRange _targetTemperatures;
 
-        private bool optimized = false;
-
         public FloatRange TargetTemperatures
         {
             get
@@ -66,17 +64,17 @@ namespace AutoEquip
 
                 var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
 
-                if (!optimized)
-                {
-                    targetTemperaturesOverride = pawnSave.targetTemperaturesOverride;
-                    _targetTemperatures = pawnSave.TargetTemperatures;
-                    optimized = true;
-                }
+           //   if (!optimized)
+           //   {
+           //       targetTemperaturesOverride = pawnSave.targetTemperaturesOverride;
+           //       _targetTemperatures = pawnSave.TargetTemperatures;
+           //       optimized = true;
+           //   }
 
-                if (!targetTemperaturesOverride)
-                {
-                    pawnSave.targetTemperaturesOverride = false;
-                }
+           //   if (!targetTemperaturesOverride)
+           //   {
+           //       pawnSave.targetTemperaturesOverride = false;
+           //   }
                 return _targetTemperatures;
             }
             set
@@ -84,9 +82,9 @@ namespace AutoEquip
                 _targetTemperatures = value;
                 targetTemperaturesOverride = true;
 
-                var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
-                pawnSave.TargetTemperatures = value;
-                pawnSave.targetTemperaturesOverride = true;
+           //   var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
+           //   pawnSave.TargetTemperatures = value;
+           //   pawnSave.targetTemperaturesOverride = true;
             }
 
         }
@@ -299,11 +297,11 @@ namespace AutoEquip
                 score *= ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
             }
 
-            score *= ApparelScoreRaw_InsulationColdAdjust(apparel);
+            score += ApparelScoreRaw_Temperature(apparel, pawn) / 10f;
 
             return score;
         }
-
+        /*
         public float ApparelScoreRaw_InsulationColdAdjust(Apparel ap)
         {
             switch (_neededWarmth)
@@ -312,30 +310,48 @@ namespace AutoEquip
                     {
                         float statValueAbstract = ap.def.GetStatValueAbstract(StatDefOf.Insulation_Cold, null);
                         float final = InsulationColdScoreFactorCurve_NeedWarm.Evaluate(statValueAbstract);
-                        if (final < 1)
-                            final /= 8;
                         return final;
                     }
+
                 case NeededWarmth.Cool:
                     {
                         float statValueAbstract = ap.def.GetStatValueAbstract(StatDefOf.Insulation_Heat, null);
                         float final = InsulationWarmScoreFactorCurve_NeedCold.Evaluate(statValueAbstract);
-                        if (final < 1)
-                            final /= 8; return final;
+                        return final;
                     }
+                    
                 default:
                     return 1;
             }
         }
-
-        public static float ApparelScoreRaw_Temperature(Apparel apparel, Pawn pawn)
+*/
+        public  float ApparelScoreRaw_Temperature(Apparel apparel, Pawn pawn)
         {
             // temperature
             SaveablePawn newPawnSaveable = MapComponent_AutoEquip.Get.GetCache(pawn);
 
             FloatRange targetTemperatures = pawn.GetApparelStatCache().TargetTemperatures;
+
+
             float minComfyTemperature = pawn.GetStatValue(StatDefOf.ComfyTemperatureMin);
             float maxComfyTemperature = pawn.GetStatValue(StatDefOf.ComfyTemperatureMax);
+
+
+            if (_pawn.story.traits.DegreeOfTrait(TraitDef.Named("TemperaturePreference")) != 0)
+            {
+                //calculating trait offset because there's no way to get comfytemperaturemin without clothes
+                List<Trait> traitList = (
+                    from tr in _pawn.story.traits.allTraits
+                    where tr.CurrentData.statOffsets != null && tr.CurrentData.statOffsets.Any((StatModifier se) => se.stat == StatDefOf.ComfyTemperatureMin)
+                    select tr
+                    ).ToList<Trait>();
+
+                foreach (Trait t in traitList)
+                {
+                    minComfyTemperature += t.CurrentData.statOffsets.First((StatModifier se) => se.stat == StatDefOf.ComfyTemperatureMin).value;
+                    maxComfyTemperature += t.CurrentData.statOffsets.First((StatModifier se) => se.stat == StatDefOf.ComfyTemperatureMax).value;
+                }
+            }
 
             // offsets on apparel
             float insulationCold = apparel.GetStatValue(StatDefOf.Insulation_Cold);
@@ -433,6 +449,8 @@ namespace AutoEquip
                     var temp = GenTemperature.AverageTemperatureAtWorldCoordsForMonth(Find.Map.WorldCoords, GenDate.CurrentMonth);
                     _targetTemperatures = new FloatRange(Math.Max(temp - 15f, ApparelStatsHelper.MinMaxTemperatureRange.min),
                                                           Math.Min(temp + 10f, ApparelStatsHelper.MinMaxTemperatureRange.max));
+
+                   
 
                     if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
                     {
@@ -555,6 +573,7 @@ namespace AutoEquip
 
         public NeededWarmth CalculateNeededWarmth(Pawn pawn)
         {
+
 
             if (_targetTemperatures.min < pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMin, null) - 10f)
                 return NeededWarmth.Warm;

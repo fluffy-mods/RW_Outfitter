@@ -11,9 +11,9 @@ namespace AutoEquip
         // Exposed members
         public Pawn Pawn;
 
-        public bool targetTemperaturesOverride;
+ //       public bool targetTemperaturesOverride;
 
-        public FloatRange TargetTemperatures;
+     //   public FloatRange TargetTemperatures;
 
         public List<Saveable_Pawn_StatDef> Stats = new List<Saveable_Pawn_StatDef>();
 
@@ -30,8 +30,8 @@ namespace AutoEquip
         public void ExposeData()
         {
             Scribe_References.LookReference(ref Pawn, "Pawn");
-            Scribe_Values.LookValue(ref targetTemperaturesOverride, "targetTemperaturesOverride");
-            Scribe_Values.LookValue(ref TargetTemperatures, "TargetTemperatures");
+        //  Scribe_Values.LookValue(ref targetTemperaturesOverride, "targetTemperaturesOverride");
+        //    Scribe_Values.LookValue(ref TargetTemperatures, "TargetTemperatures");
             Scribe_Collections.LookList(ref Stats, "Stats", LookMode.Deep);
         }
     }
