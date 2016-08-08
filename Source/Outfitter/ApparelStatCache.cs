@@ -167,6 +167,7 @@ namespace AutoEquip
                 return _cache;
             }
         }
+
         //  private int _lastStatUpdate;
         //  private int _lastTempUpdate;
         //  private Pawn _pawn;
@@ -178,7 +179,7 @@ namespace AutoEquip
             _cache = new List<StatPriority>();
             _lastStatUpdate = -5000;
             _lastTempUpdate = -5000;
-            _neededWarmth = CalculateNeededWarmth(_pawn, GenDate.CurrentMonth);
+            _neededWarmth = CalculateNeededWarmth(_pawn);
         }
 
         public float ApparelScoreRaw(Apparel apparel, Pawn pawn)
@@ -310,12 +311,17 @@ namespace AutoEquip
                 case NeededWarmth.Warm:
                     {
                         float statValueAbstract = ap.def.GetStatValueAbstract(StatDefOf.Insulation_Cold, null);
-                        return InsulationColdScoreFactorCurve_NeedWarm.Evaluate(statValueAbstract);
+                        float final = InsulationColdScoreFactorCurve_NeedWarm.Evaluate(statValueAbstract);
+                        if (final < 1)
+                            final /= 8;
+                        return final;
                     }
                 case NeededWarmth.Cool:
                     {
                         float statValueAbstract = ap.def.GetStatValueAbstract(StatDefOf.Insulation_Heat, null);
-                        return InsulationWarmScoreFactorCurve_NeedCold.Evaluate(statValueAbstract);
+                        float final = InsulationWarmScoreFactorCurve_NeedCold.Evaluate(statValueAbstract);
+                        if (final < 1)
+                            final /= 8; return final;
                     }
                 default:
                     return 1;
@@ -424,20 +430,19 @@ namespace AutoEquip
                 // get desired temperatures
                 if (!targetTemperaturesOverride)
                 {
-                    _targetTemperatures = new FloatRange(Math.Max(GenTemperature.SeasonalTemp - 15f, ApparelStatsHelper.MinMaxTemperatureRange.min),
-                                                          Math.Min(GenTemperature.SeasonalTemp + 10f, ApparelStatsHelper.MinMaxTemperatureRange.max));
-                }
+                    var temp = GenTemperature.AverageTemperatureAtWorldCoordsForMonth(Find.Map.WorldCoords, GenDate.CurrentMonth);
+                    _targetTemperatures = new FloatRange(Math.Max(temp - 15f, ApparelStatsHelper.MinMaxTemperatureRange.min),
+                                                          Math.Min(temp + 10f, ApparelStatsHelper.MinMaxTemperatureRange.max));
 
-                if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
-                {
-                    _targetTemperatures.min += 20;
-                    _targetTemperatures.max += 20;
-                }
+                    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
+                    {
+                        _targetTemperatures.max += 20;
+                    }
 
-                if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
-                {
-                    _targetTemperatures.min -= 20;
-                    _targetTemperatures.max -= 20;
+                    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
+                    {
+                        _targetTemperatures.min -= 20;
+                    }
                 }
 
                 _temperatureWeight = GenTemperature.SeasonAcceptableFor(_pawn.def) ? 1f : 5f;
@@ -548,25 +553,13 @@ namespace AutoEquip
             }
         }
 
-        public static NeededWarmth CalculateNeededWarmth(Pawn pawn, Month month)
+        public NeededWarmth CalculateNeededWarmth(Pawn pawn)
         {
-            float temperature = GenTemperature.AverageTemperatureAtWorldCoordsForMonth(Find.Map.WorldCoords, month);
 
-            if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
-            {
-                temperature += 20;
-            }
-
-            if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
-            {
-                temperature -= 20;
-            }
-
-
-            if (temperature < pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMin, null) - 10f)
+            if (_targetTemperatures.min < pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMin, null) - 10f)
                 return NeededWarmth.Warm;
 
-            if (temperature > pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMax, null) + 10f)
+            if (_targetTemperatures.max > pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMax, null) + 10f)
                 return NeededWarmth.Cool;
 
             return NeededWarmth.Any;
