@@ -111,7 +111,7 @@ namespace AutoEquip
             Rect viewRect = new Rect(groupRect.xMin, groupRect.yMin, groupRect.width - 16f, (statBases.Count + equippedOffsets.Count) * Text.LineHeight * 1.2f + 16f);
 
             if (viewRect.height > groupRect.height)
-                groupRect.height = viewRect.height;
+                viewRect.height = groupRect.height;
 
             Rect listRect = viewRect.ContractedBy(4f);
 
@@ -119,8 +119,6 @@ namespace AutoEquip
             // Detail list scrollable
 
             Widgets.BeginScrollView(groupRect, ref _scrollPosition, viewRect);
-
-            float sumStatsValue = 0;
 
             // relevant apparel stats
 
@@ -143,13 +141,11 @@ namespace AutoEquip
 
             // add values for each statdef modified by the apparel
 
-            Saveable_Pawn_StatDef[] stats = conf.Stats.ToArray();
 
-
-            foreach (Saveable_Pawn_StatDef stat in conf.Stats)
+            foreach (ApparelStatCache.StatPriority statPriority in _pawn.GetApparelStatCache().StatCache)
             {
                 // statbases, e.g. armor
-                if (statBases.Contains(stat.Stat))
+                if (statBases.Contains(statPriority.Stat))
                 {
                     itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
                     if (Mouse.IsOver(itemRect))
@@ -158,13 +154,13 @@ namespace AutoEquip
                         GUI.color = Color.white;
                     }
 
-                    float statscore = _apparel.GetStatValue(stat.Stat) * stat.Weight;
+                    float statscore = _apparel.GetStatValue(statPriority.Stat) * statPriority.Weight;
 
 
                     DrawLine(ref itemRect,
-                        stat.Stat.label, labelWidth,
-                        _apparel.GetStatValue(stat.Stat).ToString("N2"), baseValue,
-                        stat.Weight.ToString("N2"), multiplierWidth,
+                        statPriority.Stat.label, labelWidth,
+                        _apparel.GetStatValue(statPriority.Stat).ToString("N2"), baseValue,
+                        statPriority.Weight.ToString("N2"), multiplierWidth,
                         statscore.ToString("N2"), finalValue);
 
                     listRect.yMin = itemRect.yMax;
@@ -172,7 +168,7 @@ namespace AutoEquip
 
                 }
 
-                if (equippedOffsets.Contains(stat.Stat))
+                if (equippedOffsets.Contains(statPriority.Stat))
                 {
                     itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
                     if (Mouse.IsOver(itemRect))
@@ -182,8 +178,8 @@ namespace AutoEquip
                     }
 
 
-                    float statValue = GetEquippedStatValue(_apparel,stat.Stat);
-                    var statStrength = stat.Weight;
+                    float statValue = GetEquippedStatValue(_apparel, statPriority.Stat);
+                    var statStrength = statPriority.Weight;
 
 
                     if (statValue < 1) // flipped for calc + *-1
@@ -200,9 +196,9 @@ namespace AutoEquip
                     float statscore = statValue * statStrength;
 
                     DrawLine(ref itemRect,
-                        stat.Stat.label, labelWidth,
-                        GetEquippedStatValue(_apparel, stat.Stat).ToString("N2"), baseValue,
-                        stat.Weight.ToString("N2"), multiplierWidth,
+                        statPriority.Stat.label, labelWidth,
+                        GetEquippedStatValue(_apparel, statPriority.Stat).ToString("N2"), baseValue,
+                        statPriority.Weight.ToString("N2"), multiplierWidth,
                         statscore.ToString("N2"), finalValue);
 
                     listRect.yMin = itemRect.yMax;
@@ -210,12 +206,12 @@ namespace AutoEquip
 
 
                     // base value
-                    float norm = _apparel.GetStatValue(stat.Stat);
+                    float norm = _apparel.GetStatValue(statPriority.Stat);
                     float adjusted = norm;
 
                     // add offset
-                    adjusted += _apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat.Stat) *
-                                stat.Weight;
+                    adjusted += _apparel.def.equippedStatOffsets.GetStatOffsetFromList(statPriority.Stat) *
+                                statPriority.Weight;
 
                     // normalize
                     if (norm != 0)
@@ -256,7 +252,6 @@ namespace AutoEquip
             //       itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 0.6f);
             //       Widgets.DrawLineHorizontal(itemRect.xMin, itemRect.yMax, itemRect.width);
 
-            float subtotal = 1;
 
             itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
             DrawLine(ref itemRect,
@@ -275,19 +270,6 @@ namespace AutoEquip
 
 
             itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
-
-            if (sumStatsValue > 0 && stats.Length > 0)
-            {
-                subtotal += conf.ApparelScoreRaw(_apparel, _pawn);
-
-                DrawLine(ref itemRect,
-                "AverageStat".Translate(), labelWidth,
-                (sumStatsValue /stats.Length).ToString("N2"), baseValue,
-                conf.ApparelScoreRaw(_apparel,_pawn).ToString("N2"), multiplierWidth,
-                subtotal.ToString("N2"), finalValue);
-
-                itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
-            }
 
             float armor = ApparelStatCache.ApparelScoreRaw_ProtectionBaseStat(_apparel) * 0.125f;
 

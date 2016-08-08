@@ -54,7 +54,6 @@
     <Compile Include="ApparelStatCache.cs" />
     <None Include="AutoEquip\Dialog_PawnApparelComparer.cs" />
     <Compile Include="AutoEquip\Dialog_PawnApparelDetail.cs" />
-    <None Include="AutoEquip\Saveable_Outfit.cs" />
     <Compile Include="AutoEquip\TexButton.cs" />
     <Compile Include="Bootstrap.cs" />
     <Compile Include="AutoEquip\ITab_Inventory_AutoEquip.cs" />
@@ -64,8 +63,8 @@
     <Compile Include="ModInitializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ApparelStatsHelper.cs" />
-    <Compile Include="Saveable_Pawn.cs" />
-    <Compile Include="Saveable_Pawn_StatDef.cs" />
+    <Compile Include="AutoEquip\Saveable_Pawn.cs" />
+    <Compile Include="AutoEquip\Saveable_Pawn_StatDef.cs" />
     <Compile Include="Widgets_FloatRange.cs" />
   </ItemGroup>
   <ItemGroup>

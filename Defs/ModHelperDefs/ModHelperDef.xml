@@ -6,9 +6,9 @@
     <ModName>AutoEquip</ModName>
     <minCCLversion>0.14.0</minCCLversion>
     <PostLoadInjectors>
-      <li>AutoEquip.InjectTab</li>
     </PostLoadInjectors>
     <SpecialInjectors>
+      <li>AutoEquip.InjectTab</li>
       <li>AutoEquip.ITabInjector</li>
     </SpecialInjectors>
     <MapComponents>

@@ -22,7 +22,7 @@ namespace AutoEquip
         //  {
         //      Log.Message( pawn.NameStringShort + " stat priorities:\n" +
         //                   String.Join( "\n",
-        //                                pawn.NormalizeCalculedStatDef()
+        //                                pawn.StatCache()
         //                                    .Select( stat => stat.Key.LabelCap + ": " + stat.Value )
         //                                    .ToArray() ) );
         //

@@ -22,42 +22,148 @@ namespace AutoEquip
 
     public class ApparelStatCache
     {
+        private List<StatPriority> _cache;
 
         private Pawn _pawn;
-        private SaveablePawn _saveablePawn;
-        private Outfit _outfit;
-        private Saveable_Pawn_StatDef[] _stats;
+        public int _lastStatUpdate;
+        private int _lastTempUpdate;
+        public bool targetTemperaturesOverride;
 
-        public ApparelStatCache(Pawn pawn)
-            : this(MapComponent_AutoEquip.Get.GetCache(pawn))
+        private float _temperatureWeight;
+
+        public float TemperatureWeight
         {
+            get
+            {
+                UpdateTemperatureIfNecessary();
+                return _temperatureWeight;
+            }
         }
 
-        public ApparelStatCache(SaveablePawn saveablePawn)
-        {
-            _saveablePawn = saveablePawn;
-            _pawn = saveablePawn.Pawn;
-            _outfit = _pawn.outfits.CurrentOutfit;
+        private FloatRange _targetTemperatures;
 
-            _stats = saveablePawn.NormalizeCalculedStatDef().ToArray();
+        private bool optimized = false;
+
+        public FloatRange TargetTemperatures
+        {
+            get
+            {
+                UpdateTemperatureIfNecessary();
+
+                var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
+
+                if (!optimized)
+                {
+                    targetTemperaturesOverride = pawnSave.targetTemperaturesOverride;
+                    _targetTemperatures = pawnSave.TargetTemperatures;
+                    optimized = true;
+                }
+
+                if (!targetTemperaturesOverride)
+                {
+                    pawnSave.targetTemperaturesOverride = false;
+                }
+                return _targetTemperatures;
+            }
+            set
+            {
+                _targetTemperatures = value;
+                targetTemperaturesOverride = true;
+
+                var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
+                pawnSave.TargetTemperatures = value;
+                pawnSave.targetTemperaturesOverride = true;
+            }
 
         }
 
-        public IEnumerable<Saveable_Pawn_StatDef> Stats => _stats;
+        public List<StatPriority> StatCache
+        {
+            get
+            {
+                var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
+
+                // update auto stat priorities roughly between every vanilla gear check cycle
+                if (Find.TickManager.TicksGame - _lastStatUpdate > 1900)
+                {
+                    // list of auto stats
+
+                    if (_cache.Count < 1 && pawnSave.Stats.Count > 0)
+                        foreach (var vari in pawnSave.Stats)
+                        {
+                            _cache.Add(new StatPriority(vari.Stat, vari.Weight, vari.Assignment));
+                        }
+                    pawnSave.Stats.Clear();
+
+                    Dictionary<StatDef, float> updateAutoPriorities = _pawn.GetWeightedApparelStats();
+                    // clear auto priorities
+                    _cache.RemoveAll(stat => stat.Assignment == StatAssignment.Automatic);
+
+                    // loop over each (new) stat
+                    foreach (KeyValuePair<StatDef, float> pair in updateAutoPriorities)
+                    {
+                        // find index of existing priority for this stat
+                        int i = _cache.FindIndex(stat => stat.Stat == pair.Key);
+
+                        // if index -1 it doesnt exist yet, add it
+                        if (i < 0)
+                        {
+                            _cache.Add(new StatPriority(pair));
+                        }
+                        else
+                        {
+                            // it exists, make sure existing is (now) of type override.
+                            _cache[i].Assignment = StatAssignment.Override;
+                        }
+                    }
+
+                    // update our time check.
+                    _lastStatUpdate = Find.TickManager.TicksGame;
+                }
 
 
+                foreach (var statPriority in _cache)
+                {
+                    if (statPriority.Assignment != StatAssignment.Automatic)
+                    {
+                        if (statPriority.Assignment != StatAssignment.Override)
+                            statPriority.Assignment = StatAssignment.Manual;
+
+                        bool exists = false;
+                        foreach (var stat in pawnSave.Stats)
+                        {
+                            if (!stat.Stat.Equals(statPriority.Stat)) continue;
+                            stat.Weight = statPriority.Weight;
+                            stat.Assignment = statPriority.Assignment;
+                            exists = true;
+                        }
+                        if (!exists)
+                        {
+                            Saveable_Pawn_StatDef stats = new Saveable_Pawn_StatDef
+                            {
+                                Stat = statPriority.Stat,
+                                Assignment = statPriority.Assignment,
+                                Weight = statPriority.Weight
+                            };
+                            pawnSave.Stats.Add(stats);
+                        }
+                    }
+                }
+
+                return _cache;
+            }
+        }
         //  private int _lastStatUpdate;
         //  private int _lastTempUpdate;
         //  private Pawn _pawn;
-        //  public List<ApparelStatCache.StatPriority> Stats;
 
-        //  public ApparelStatCache(Pawn pawn)
-        //  {
-        //      _pawn = pawn;
-        //      Stats = new List<StatPriority>();
-        //      _lastStatUpdate = -5000;
-        //      _lastTempUpdate = -5000;
-        //  }
+        public ApparelStatCache(Pawn pawn)
+        {
+            _pawn = pawn;
+            _cache = new List<StatPriority>();
+            _lastStatUpdate = -5000;
+            _lastTempUpdate = -5000;
+        }
 
         public float ApparelScoreRaw(Apparel apparel, Pawn pawn)
         {
@@ -96,25 +202,24 @@ namespace AutoEquip
             //}
 
             // add values for each statdef modified by the apparel
-            SaveablePawn conf = MapComponent_AutoEquip.Get.GetCache(pawn);
 
-            foreach (Saveable_Pawn_StatDef stat in Stats)
-                //foreach (ApparelStatCache.StatPriority statPriority in pawn.GetCache().StatCache)
+            foreach (StatPriority statPriority in pawn.GetApparelStatCache().StatCache)
+            //foreach (ApparelStatCache.StatPriority statPriority in pawn.GetCache().StatCache)
             {
                 // statbases, e.g. armor
-                if (statBases.Contains(stat.Stat))
+                if (statBases.Contains(statPriority.Stat))
                 {
                     // add stat to base score before offsets are handled ( the pawn's apparel stat cache always has armors first as it is initialized with it).
-                    score += apparel.GetStatValue(stat.Stat) * stat.Weight;
+                    score += apparel.GetStatValue(statPriority.Stat) * statPriority.Weight;
                 }
 
                 // equipped offsets, e.g. movement speeds
-                if (equippedOffsets.Contains(stat.Stat))
+                if (equippedOffsets.Contains(statPriority.Stat))
                 {
 
-                    float statValue = DialogPawnApparelDetail.GetEquippedStatValue(apparel, stat.Stat);
+                    float statValue = DialogPawnApparelDetail.GetEquippedStatValue(apparel, statPriority.Stat);
 
-                    var statStrength = stat.Weight;
+                    var statStrength = statPriority.Weight;
 
                     if (statValue < 1)
                     {
@@ -129,12 +234,12 @@ namespace AutoEquip
 
 
                     // base value
-                    float norm = apparel.GetStatValue(stat.Stat);
+                    float norm = apparel.GetStatValue(statPriority.Stat);
                     float adjusted = norm;
 
                     // add offset
-                    adjusted += apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat.Stat) *
-                                stat.Weight;
+                    adjusted += apparel.def.equippedStatOffsets.GetStatOffsetFromList(statPriority.Stat) *
+                                statPriority.Weight;
 
                     // normalize
                     if (norm != 0)
@@ -191,7 +296,7 @@ namespace AutoEquip
             // temperature
             SaveablePawn newPawnSaveable = MapComponent_AutoEquip.Get.GetCache(pawn);
 
-            FloatRange targetTemperatures = newPawnSaveable.TargetTemperatures;
+            FloatRange targetTemperatures = pawn.GetApparelStatCache().TargetTemperatures;
             float minComfyTemperature = pawn.GetStatValue(StatDefOf.ComfyTemperatureMin);
             float maxComfyTemperature = pawn.GetStatValue(StatDefOf.ComfyTemperatureMax);
 
@@ -236,7 +341,7 @@ namespace AutoEquip
 
             // now for the interesting bit.
             float temperatureScoreOffset = 0f;
-            float tempWeight = newPawnSaveable.TemperatureWeight;
+            float tempWeight = pawn.GetApparelStatCache().TemperatureWeight;
             float neededInsulation_Cold = targetTemperatures.TrueMin - minComfyTemperature;
             // isolation_cold is given as negative numbers < 0 means we're underdressed
             float neededInsulation_Warmth = targetTemperatures.TrueMax - maxComfyTemperature;
@@ -281,13 +386,40 @@ namespace AutoEquip
             return num + num2 * 1.25f;
         }
 
-        public static void DrawStatRow(ref Vector2 cur, float width, Saveable_Pawn_StatDef stat, Pawn pawn, out bool stop_ui)
+        public void UpdateTemperatureIfNecessary(bool force = false)
+        {
+            if (Find.TickManager.TicksGame - _lastTempUpdate > 1900 || force)
+            {
+                // get desired temperatures
+                if (!targetTemperaturesOverride)
+                {
+                    _targetTemperatures = new FloatRange(Math.Max(GenTemperature.SeasonalTemp - 15f, ApparelStatsHelper.MinMaxTemperatureRange.min),
+                                                          Math.Min(GenTemperature.SeasonalTemp + 10f, ApparelStatsHelper.MinMaxTemperatureRange.max));
+                }
+
+                if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
+                {
+                    _targetTemperatures.min += 20;
+                    _targetTemperatures.max += 20;
+                }
+
+                if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
+                {
+                    _targetTemperatures.min -= 20;
+                    _targetTemperatures.max -= 20;
+                }
+
+                _temperatureWeight = GenTemperature.SeasonAcceptableFor(_pawn.def) ? 1f : 5f;
+            }
+        }
+
+        public static void DrawStatRow(ref Vector2 cur, float width, StatPriority stat, Pawn pawn, out bool stop_ui)
         {
             // sent a signal if the statlist has changed
             stop_ui = false;
 
             // set up rects
-            Rect labelRect = new Rect(cur.x, cur.y, (width - 24) / 2f -12f, 30f);
+            Rect labelRect = new Rect(cur.x, cur.y, (width - 24) / 2f - 12f, 30f);
             Rect sliderRect = new Rect(labelRect.xMax + 4f, cur.y + 5f, labelRect.width, 25f);
             Rect buttonRect = new Rect(sliderRect.xMax + 4f, cur.y + 3f, 16f, 16f);
 
@@ -349,6 +481,40 @@ namespace AutoEquip
 
             // advance row
             cur.y += 30f;
+        }
+
+        public class StatPriority
+        {
+            public StatDef Stat { get; }
+            public StatAssignment Assignment { get; set; }
+            public float Weight { get; set; }
+
+            public StatPriority(StatDef stat, float priority, StatAssignment assignment = StatAssignment.Automatic)
+            {
+                Stat = stat;
+                Weight = priority;
+                Assignment = assignment;
+            }
+
+            public StatPriority(KeyValuePair<StatDef, float> statDefWeightPair,
+                                 StatAssignment assignment = StatAssignment.Automatic)
+            {
+                Stat = statDefWeightPair.Key;
+                Weight = statDefWeightPair.Value;
+                Assignment = assignment;
+            }
+
+            public void Delete(Pawn pawn)
+            {
+                pawn.GetApparelStatCache()._cache.Remove(this);
+            }
+
+            public void Reset(Pawn pawn)
+            {
+                Dictionary<StatDef, float> stats = pawn.GetWeightedApparelStats();
+                Weight = stats[Stat];
+                Assignment = StatAssignment.Automatic;
+            }
         }
     }
 }

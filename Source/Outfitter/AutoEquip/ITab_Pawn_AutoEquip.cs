@@ -41,7 +41,8 @@ namespace AutoEquip
             cur.y += 10f;
 
             // temperature slider
-            SaveablePawn pawnStatCache = MapComponent_AutoEquip.Get.GetCache(SelPawn);
+            //    SaveablePawn pawnStatCache = MapComponent_AutoEquip.Get.GetCache(SelPawn);
+            ApparelStatCache pawnStatCache = SelPawn.GetApparelStatCache();
             FloatRange targetTemps = pawnStatCache.TargetTemperatures;
             FloatRange minMaxTemps = ApparelStatsHelper.MinMaxTemperatureRange;
             Rect sliderRect = new Rect(cur.x, cur.y, canvas.width - 20f, 40f);
@@ -64,6 +65,8 @@ namespace AutoEquip
                 if (Widgets.ButtonImage(tempResetRect, TexButton.resetButton))
                 {
                     pawnStatCache.targetTemperaturesOverride = false;
+                    var saveablePawn = MapComponent_AutoEquip.Get.GetCache(SelPawn);
+                    saveablePawn.targetTemperaturesOverride = false;
                     pawnStatCache.UpdateTemperatureIfNecessary(true);
                 }
                 TooltipHandler.TipRegion(tempResetRect, "TemperatureRangeReset".Translate());
@@ -87,12 +90,7 @@ namespace AutoEquip
                 {
                     options.Add(new FloatMenuOption(def.LabelCap, delegate
                   {
-                   var outfitStat = new Saveable_Pawn_StatDef();
-                      outfitStat.Stat = def;
-                      outfitStat.Weight = 0f;
-                      outfitStat.Assignment= StatAssignment.Manual;
-
-                      pawnStatCache.Stats.Insert(0, outfitStat);
+                      SelPawn.GetApparelStatCache().StatCache.Insert(0, new ApparelStatCache.StatPriority(def, 0f, StatAssignment.Manual));                      
                       //pawnStatCache.Stats.Insert(0, new Saveable_Pawn_StatDef(def, 0f, StatAssignment.Manual));
                   }));
                 }
@@ -111,7 +109,7 @@ namespace AutoEquip
             // main content in scrolling view
             Rect contentRect = new Rect(cur.x, cur.y, canvas.width, canvas.height - cur.y);
             Rect viewRect = contentRect;
-            viewRect.height = pawnStatCache.Stats.Count * 30f + 10f;
+            viewRect.height = SelPawn.GetApparelStatCache().StatCache.Count * 30f + 10f;
             if (viewRect.height > contentRect.height)
             {
                 viewRect.width -= 20f;
@@ -122,7 +120,7 @@ namespace AutoEquip
             cur = Vector2.zero;
 
             // none label
-            if (!pawnStatCache.Stats.Any())
+            if (!SelPawn.GetApparelStatCache().StatCache.Any())
             {
                 Rect noneLabel = new Rect(cur.x, cur.y, viewRect.width, 30f);
                 GUI.color = Color.grey;
@@ -148,7 +146,7 @@ namespace AutoEquip
                 cur.y += 15f;
 
                 // stat weight sliders
-                foreach (Saveable_Pawn_StatDef stat in pawnStatCache.Stats)
+                foreach (ApparelStatCache.StatPriority stat in SelPawn.GetApparelStatCache().StatCache)
                 {
                     bool stop_UI;
                     ApparelStatCache.DrawStatRow(ref cur, viewRect.width, stat, SelPawn, out stop_UI);

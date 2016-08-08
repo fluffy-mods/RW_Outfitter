@@ -14,7 +14,7 @@ namespace AutoEquip
 {
     public static class ApparelStatsHelper
     {
-   //     private static readonly Dictionary<Pawn, ApparelStatCache> PawnApparelStatCaches = new Dictionary<Pawn, ApparelStatCache>();
+        private static readonly Dictionary<Pawn, ApparelStatCache> PawnApparelStatCaches = new Dictionary<Pawn, ApparelStatCache>();
         private static readonly List<string> IgnoredWorktypeDefs = new List<string>();
 
         public static FloatRange MinMaxTemperatureRange => new FloatRange(-100, 100);
@@ -33,6 +33,14 @@ namespace AutoEquip
         //  new CurvePoint( 1f, 1f )
         };
 
+        public static ApparelStatCache GetApparelStatCache(this Pawn pawn)
+        {
+            if (!PawnApparelStatCaches.ContainsKey(pawn))
+            {
+                PawnApparelStatCaches.Add(pawn, new ApparelStatCache(pawn));
+            }
+            return PawnApparelStatCaches[pawn];
+        }
 
         public static Dictionary<StatDef, float> GetWeightedApparelStats(this Pawn pawn)
         {
@@ -183,10 +191,9 @@ namespace AutoEquip
 
         public static List<StatDef> NotYetAssignedStatDefs(this Pawn pawn)
         {
-            SaveablePawn newPawnSaveable = MapComponent_AutoEquip.Get.GetCache(pawn);
             return
                 AllStatDefsModifiedByAnyApparel
-                    .Except(newPawnSaveable.Stats.Select(prio => prio.Stat))
+                    .Except(pawn.GetApparelStatCache().StatCache.Select(prio => prio.Stat))
                     .ToList();
         }
 
