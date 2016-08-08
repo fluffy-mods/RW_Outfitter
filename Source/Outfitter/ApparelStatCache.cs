@@ -28,20 +28,7 @@ namespace AutoEquip
         public int _lastStatUpdate;
         private int _lastTempUpdate;
         public bool targetTemperaturesOverride;
-        private static NeededWarmth _neededWarmth;
-
-        private static readonly SimpleCurve InsulationColdScoreFactorCurve_NeedWarm = new SimpleCurve
-         {
-             new CurvePoint(-30f, 8f),
-             new CurvePoint(0f, 1f)
-         };
-
-        private static readonly SimpleCurve InsulationWarmScoreFactorCurve_NeedCold = new SimpleCurve
-         {
-             new CurvePoint(30f, 8f),
-             new CurvePoint(0f, 1f),
-             new CurvePoint(-10, 0.1f)
-         };
+  
 
         private float _temperatureWeight;
 
@@ -60,21 +47,26 @@ namespace AutoEquip
         {
             get
             {
-                UpdateTemperatureIfNecessary();
-
                 var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
+                if (pawnSave.targetTemperaturesOverride)
+                {
+                           targetTemperaturesOverride = pawnSave.targetTemperaturesOverride;
+                           _targetTemperatures = pawnSave.TargetTemperatures;
+                }
 
-           //   if (!optimized)
-           //   {
-           //       targetTemperaturesOverride = pawnSave.targetTemperaturesOverride;
-           //       _targetTemperatures = pawnSave.TargetTemperatures;
-           //       optimized = true;
-           //   }
+                //   if (!optimized)
+                //   {
+                //       targetTemperaturesOverride = pawnSave.targetTemperaturesOverride;
+                //       _targetTemperatures = pawnSave.TargetTemperatures;
+                //       optimized = true;
+                //   }
 
-           //   if (!targetTemperaturesOverride)
-           //   {
-           //       pawnSave.targetTemperaturesOverride = false;
-           //   }
+                //   if (!targetTemperaturesOverride)
+                //   {
+                //       pawnSave.targetTemperaturesOverride = false;
+                //   }
+
+                UpdateTemperatureIfNecessary();
                 return _targetTemperatures;
             }
             set
@@ -82,9 +74,9 @@ namespace AutoEquip
                 _targetTemperatures = value;
                 targetTemperaturesOverride = true;
 
-           //   var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
-           //   pawnSave.TargetTemperatures = value;
-           //   pawnSave.targetTemperaturesOverride = true;
+                   var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
+                   pawnSave.TargetTemperatures = value;
+                   pawnSave.targetTemperaturesOverride = true;
             }
 
         }
@@ -177,7 +169,6 @@ namespace AutoEquip
             _cache = new List<StatPriority>();
             _lastStatUpdate = -5000;
             _lastTempUpdate = -5000;
-            _neededWarmth = CalculateNeededWarmth(_pawn);
         }
 
         public float ApparelScoreRaw(Apparel apparel, Pawn pawn)
@@ -325,7 +316,7 @@ namespace AutoEquip
             }
         }
 */
-        public  float ApparelScoreRaw_Temperature(Apparel apparel, Pawn pawn)
+        public float ApparelScoreRaw_Temperature(Apparel apparel, Pawn pawn)
         {
             // temperature
             SaveablePawn newPawnSaveable = MapComponent_AutoEquip.Get.GetCache(pawn);
@@ -446,24 +437,30 @@ namespace AutoEquip
                 // get desired temperatures
                 if (!targetTemperaturesOverride)
                 {
-                    var temp = GenTemperature.AverageTemperatureAtWorldCoordsForMonth(Find.Map.WorldCoords, GenDate.CurrentMonth);
+
+                    //        var temp = GenTemperature.AverageTemperatureAtWorldCoordsForMonth(Find.Map.WorldCoords, GenDate.CurrentMonth);
+                    var temp = GenTemperature.OutdoorTemp;
+
                     _targetTemperatures = new FloatRange(Math.Max(temp - 15f, ApparelStatsHelper.MinMaxTemperatureRange.min),
                                                           Math.Min(temp + 10f, ApparelStatsHelper.MinMaxTemperatureRange.max));
 
-                   
 
-                    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
-                    {
-                        _targetTemperatures.max += 20;
-                    }
 
-                    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
-                    {
-                        _targetTemperatures.min -= 20;
-                    }
+                //  if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
+                //  {
+                //      _targetTemperatures.max += 20;
+                //  }
+                //
+                //  if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
+                //  {
+                //      _targetTemperatures.min -= 20;
+                //  }
+
+                    var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
+                    pawnSave.targetTemperaturesOverride = false;
                 }
 
-                _temperatureWeight = GenTemperature.SeasonAcceptableFor(_pawn.def) ? 1f : 5f;
+                _temperatureWeight = GenTemperature.OutdoorTemperatureAcceptableFor(_pawn.def) ? 0.25f : 1f;
             }
         }
 
@@ -569,19 +566,6 @@ namespace AutoEquip
                 Weight = stats[Stat];
                 Assignment = StatAssignment.Automatic;
             }
-        }
-
-        public NeededWarmth CalculateNeededWarmth(Pawn pawn)
-        {
-
-
-            if (_targetTemperatures.min < pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMin, null) - 10f)
-                return NeededWarmth.Warm;
-
-            if (_targetTemperatures.max > pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMax, null) + 10f)
-                return NeededWarmth.Cool;
-
-            return NeededWarmth.Any;
         }
 
     }
