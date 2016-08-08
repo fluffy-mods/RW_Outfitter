@@ -41,7 +41,7 @@ namespace AutoEquip
             cur.y += 10f;
 
             // temperature slider
-            SaveablePawn pawnStatCache = MapComponent_AutoEquip.Get.GetApparelStatCache(SelPawn);
+            SaveablePawn pawnStatCache = MapComponent_AutoEquip.Get.GetCache(SelPawn);
             FloatRange targetTemps = pawnStatCache.TargetTemperatures;
             FloatRange minMaxTemps = ApparelStatsHelper.MinMaxTemperatureRange;
             Rect sliderRect = new Rect(cur.x, cur.y, canvas.width - 20f, 40f);
@@ -87,8 +87,13 @@ namespace AutoEquip
                 {
                     options.Add(new FloatMenuOption(def.LabelCap, delegate
                   {
-                      pawnStatCache
-                             .StatCache.Insert(0, new Saveable_Pawn_StatDef(def, 0f, StatAssignment.Manual));
+                   var outfitStat = new Saveable_Pawn_StatDef();
+                      outfitStat.Stat = def;
+                      outfitStat.Weight = 0f;
+                      outfitStat.Assignment= StatAssignment.Manual;
+
+                      pawnStatCache.Stats.Insert(0, outfitStat);
+                      //pawnStatCache.Stats.Insert(0, new Saveable_Pawn_StatDef(def, 0f, StatAssignment.Manual));
                   }));
                 }
                 Find.WindowStack.Add(new FloatMenu(options));
@@ -106,7 +111,7 @@ namespace AutoEquip
             // main content in scrolling view
             Rect contentRect = new Rect(cur.x, cur.y, canvas.width, canvas.height - cur.y);
             Rect viewRect = contentRect;
-            viewRect.height = pawnStatCache.StatCache.Count * 30f + 10f;
+            viewRect.height = pawnStatCache.Stats.Count * 30f + 10f;
             if (viewRect.height > contentRect.height)
             {
                 viewRect.width -= 20f;
@@ -117,7 +122,7 @@ namespace AutoEquip
             cur = Vector2.zero;
 
             // none label
-            if (!pawnStatCache.StatCache.Any())
+            if (!pawnStatCache.Stats.Any())
             {
                 Rect noneLabel = new Rect(cur.x, cur.y, viewRect.width, 30f);
                 GUI.color = Color.grey;
@@ -143,7 +148,7 @@ namespace AutoEquip
                 cur.y += 15f;
 
                 // stat weight sliders
-                foreach (Saveable_Pawn_StatDef stat in pawnStatCache.StatCache)
+                foreach (Saveable_Pawn_StatDef stat in pawnStatCache.Stats)
                 {
                     bool stop_UI;
                     ApparelStatCache.DrawStatRow(ref cur, viewRect.width, stat, SelPawn, out stop_UI);

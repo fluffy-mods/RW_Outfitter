@@ -11,14 +11,15 @@ namespace AutoEquip
     {
         public List<SaveablePawn> PawnCache = new List<SaveablePawn>();
 
-        public SaveablePawn GetApparelStatCache(Pawn pawn)
+        public SaveablePawn GetCache(Pawn pawn)
         {
             foreach (SaveablePawn c in PawnCache)
                 if (c.Pawn == pawn)
                     return c;
-            SaveablePawn n = new SaveablePawn(pawn);
+            SaveablePawn n = new SaveablePawn { Pawn = pawn };
             PawnCache.Add(n);
             return n;
+
             // if (!PawnApparelStatCaches.ContainsKey(pawn))
             // {
             //     PawnApparelStatCaches.Add(pawn, new ApparelStatCache(pawn));

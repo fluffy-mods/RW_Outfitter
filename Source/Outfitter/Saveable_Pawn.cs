@@ -10,7 +10,7 @@ namespace AutoEquip
     {
         // Exposed members
         public Pawn Pawn;
-        public List<Saveable_Pawn_StatDef> Stats = new List<Saveable_Pawn_StatDef>();
+        //      public List<Saveable_Pawn_StatDef> Stats;
 
         public int _lastStatUpdate;
         public int _lastWorkStatUpdate;
@@ -44,15 +44,17 @@ namespace AutoEquip
 
         }
 
-        public List<Saveable_Pawn_StatDef> _cache;
+        public List<Saveable_Pawn_StatDef> Stats;
 
-        public SaveablePawn(Pawn pawn)
-          {
-              Pawn = pawn;
-              _cache = new List<Saveable_Pawn_StatDef>();
-              _lastStatUpdate = -5000;
-              _lastTempUpdate = -5000;
-          }
+
+
+        //  public SaveablePawn(Pawn pawn)
+        //    {
+        //        Pawn = pawn;
+        //        Stats = new List<Saveable_Pawn_StatDef>();
+        //        _lastStatUpdate = -5000;
+        //        _lastTempUpdate = -5000;
+        //    }
 
         public void UpdateTemperatureIfNecessary(bool force = false)
         {
@@ -81,43 +83,49 @@ namespace AutoEquip
             }
         }
 
-        public List<Saveable_Pawn_StatDef> StatCache
+        public IEnumerable<Saveable_Pawn_StatDef> NormalizeCalculedStatDef()
         {
-            get
+
+            // update auto stat priorities roughly between every vanilla gear check cycle
+            if (Find.TickManager.TicksGame - _lastStatUpdate > 1900)
             {
-                // update auto stat priorities roughly between every vanilla gear check cycle
-                if (Find.TickManager.TicksGame - _lastStatUpdate > 1900)
+                // list of auto stats
+                Dictionary<StatDef, float> updateAutoPriorities = Pawn.GetWeightedApparelStats();
+
+                // clear auto priorities
+                Stats.RemoveAll(stat => stat.Assignment == StatAssignment.Automatic);
+
+                // loop over each (new) stat
+                foreach (KeyValuePair<StatDef, float> pair in updateAutoPriorities)
                 {
-                    // list of auto stats
-                    Dictionary<StatDef, float> updateAutoPriorities = Pawn.GetWeightedApparelStats();
+                    // find index of existing priority for this stat
+                    int i = Stats.FindIndex(stat => stat.Stat == pair.Key);
 
-                    // clear auto priorities
-                    _cache.RemoveAll(stat => stat.Assignment == StatAssignment.Automatic);
-
-                    // loop over each (new) stat
-                    foreach (KeyValuePair<StatDef, float> pair in updateAutoPriorities)
+                    // if index -1 it doesnt exist yet, add it
+                    if (i < 0)
                     {
-                        // find index of existing priority for this stat
-                        int i = _cache.FindIndex(stat => stat.Stat == pair.Key);
-
-                        // if index -1 it doesnt exist yet, add it
-                        if (i < 0)
-                        {
-                            _cache.Add(new Saveable_Pawn_StatDef(pair));
-                        }
-                        else
-                        {
-                            // it exists, make sure existing is (now) of type override.
-                            _cache[i].Assignment = StatAssignment.Override;
-                        }
+                        var outfitStat = new Saveable_Pawn_StatDef();
+                        outfitStat.Stat = pair.Key;
+                        outfitStat.Weight = pair.Value;
+                        outfitStat.Assignment = StatAssignment.Automatic;
+                        Stats.Add(outfitStat);
+                        //Stats.Add(new Saveable_Pawn_StatDef(pair));
                     }
-
-                    // update our time check.
-                    _lastStatUpdate = Find.TickManager.TicksGame;
+                    else
+                    {
+                        // it exists, make sure existing is (now) of type override.
+                        Stats[i].Assignment = StatAssignment.Override;
+                    }
                 }
-                return _cache;
+
+                // update our time check.
+                _lastStatUpdate = Find.TickManager.TicksGame;
             }
+            return Stats;
+
         }
+
+
         /*
         public class StatPriority
         {
@@ -142,12 +150,12 @@ namespace AutoEquip
 
             public void Delete(Pawn pawn)
             {
-                pawn.GetApparelStatCache()._cache.Remove(this);
+                pawn.GetCache().Stats.Remove(this);
             }
 
             public void Reset(Pawn pawn)
             {
-                Dictionary<StatDef, float> stats = pawn.GetWeightedApparelStats();
+                Dictionary<StatDef, float> stats = pawn.NormalizeCalculedStatDef();
                 Weight = stats[Stat];
                 Assignment = StatAssignment.Automatic;
             }

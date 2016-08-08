@@ -75,6 +75,8 @@ namespace AutoEquip
 
         protected override void FillTab()
         {
+
+            ApparelStatCache conf= new ApparelStatCache(SelPawn);
             #region Modded
 
             if (SelPawnForGear.IsColonist)
@@ -134,7 +136,7 @@ namespace AutoEquip
                 Widgets.ListSeparator(ref num, viewRect.width, "Equipment".Translate());
                 foreach (ThingWithComps current in this.SelPawnForGear.equipment.AllEquipment)
                 {
-                    this.DrawThingRowModded(ref num, viewRect.width, current);
+                    this.DrawThingRowModded(ref num, viewRect.width, current, conf);
                 }
             }
             if (this.SelPawnForGear.apparel != null)
@@ -144,7 +146,7 @@ namespace AutoEquip
                                              orderby ap.def.apparel.bodyPartGroups[0].listOrder descending
                                              select ap)
                 {
-                    this.DrawThingRowModded(ref num, viewRect.width, current2);
+                    this.DrawThingRowModded(ref num, viewRect.width, current2, conf);
                 }
             }
             if (this.SelPawnForGear.inventory != null)
@@ -154,7 +156,7 @@ namespace AutoEquip
                 ITab_Pawn_GearModded.workingInvList.AddRange(this.SelPawnForGear.inventory.container);
                 for (int i = 0; i < ITab_Pawn_GearModded.workingInvList.Count; i++)
                 {
-                    this.DrawThingRowModded(ref num, viewRect.width, ITab_Pawn_GearModded.workingInvList[i]);
+                    this.DrawThingRowModded(ref num, viewRect.width, ITab_Pawn_GearModded.workingInvList[i], conf);
                 }
             }
             if (Event.current.type == EventType.Layout)
@@ -218,7 +220,7 @@ namespace AutoEquip
             Text.Anchor = TextAnchor.UpperLeft;
         }
 
-        private void DrawThingRowModded(ref float y, float width, Thing thing)
+        private void DrawThingRowModded(ref float y, float width, Thing thing, ApparelStatCache conf)
         {
             Apparel ap = thing as Apparel;
 
@@ -374,7 +376,7 @@ namespace AutoEquip
             Rect rect3 = new Rect(ThingLeftX, y, width - ThingLeftX - 58f, ThingRowHeight);
             #region Modded
             string text = thing.LabelCap;
-            string text_Score = Math.Round(ApparelStatsHelper.ApparelScoreRaw(ap, SelPawn), 2).ToString("N2");
+            string text_Score = Math.Round(conf.ApparelScoreRaw(ap, SelPawn), 2).ToString("N2");
             #endregion
             if (thing is Apparel && this.SelPawnForGear.outfits != null && this.SelPawnForGear.outfits.forcedHandler.IsForced((Apparel)thing))
             {
