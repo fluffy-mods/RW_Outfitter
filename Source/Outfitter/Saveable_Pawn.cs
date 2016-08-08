@@ -44,7 +44,7 @@ namespace AutoEquip
 
         }
 
-        public List<Saveable_Pawn_StatDef> Stats;
+        public List<Saveable_Pawn_StatDef> Stats = new List<Saveable_Pawn_StatDef>();
 
 
 
