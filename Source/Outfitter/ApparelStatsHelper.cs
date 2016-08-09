@@ -197,9 +197,6 @@ namespace AutoEquip
                     .ToList();
         }
 
-
-
-
         public static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfWorkType(WorkTypeDef worktype)
         {
             switch (worktype.defName)

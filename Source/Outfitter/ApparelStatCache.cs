@@ -442,23 +442,22 @@ namespace AutoEquip
                 if (!targetTemperaturesOverride)
                 {
 
-                    //        var temp = GenTemperature.AverageTemperatureAtWorldCoordsForMonth(Find.Map.WorldCoords, GenDate.CurrentMonth);
-                    var temp = GenTemperature.OutdoorTemp;
+                    var temp = GenTemperature.AverageTemperatureAtWorldCoordsForMonth(Find.Map.WorldCoords, GenDate.CurrentMonth);
 
-                    _targetTemperatures = new FloatRange(Math.Max(temp - 15f, ApparelStatsHelper.MinMaxTemperatureRange.min),
-                                                          Math.Min(temp + 10f, ApparelStatsHelper.MinMaxTemperatureRange.max));
+                    _targetTemperatures = new FloatRange(Math.Max(temp - 12f, ApparelStatsHelper.MinMaxTemperatureRange.min),
+                                                          Math.Min(temp + 12f, ApparelStatsHelper.MinMaxTemperatureRange.max));
 
-
-
-                    //  if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
-                    //  {
-                    //      _targetTemperatures.max += 20;
-                    //  }
-                    //
-                    //  if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
-                    //  {
-                    //      _targetTemperatures.min -= 20;
-                    //  }
+                      if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
+                      {
+                          _targetTemperatures.min += 20;
+                        _targetTemperatures.max += 20;
+                      }
+                    
+                      if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
+                      {
+                          _targetTemperatures.min -= 20;
+                        _targetTemperatures.max -= 20;
+                      }
 
                     var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
                     pawnSave.targetTemperaturesOverride = false;
@@ -562,6 +561,9 @@ namespace AutoEquip
             public void Delete(Pawn pawn)
             {
                 pawn.GetApparelStatCache()._cache.Remove(this);
+
+                var pawnSave = MapComponent_AutoEquip.Get.GetCache(pawn);
+                pawnSave.Stats.RemoveAll(i => i.Stat ==Stat);
             }
 
             public void Reset(Pawn pawn)
@@ -569,6 +571,9 @@ namespace AutoEquip
                 Dictionary<StatDef, float> stats = pawn.GetWeightedApparelStats();
                 Weight = stats[Stat];
                 Assignment = StatAssignment.Automatic;
+
+                var pawnSave = MapComponent_AutoEquip.Get.GetCache(pawn);
+                pawnSave.Stats.RemoveAll(i => i.Stat == Stat);
             }
         }
 
