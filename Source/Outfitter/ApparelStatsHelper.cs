@@ -48,6 +48,70 @@ namespace AutoEquip
             //       dict.Add(StatDefOf.ArmorRating_Blunt, 0.25f);
             //       dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
 
+            if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ToxicFallout>().Any())
+            {
+                dict.Add(StatDefOf.ImmunityGainSpeed, 1f);
+            }
+
+            if (Find.MapConditionManager.ConditionIsActive(MapConditionDef.Named("PsychicDrone")))
+            {
+                if (Find.MapConditionManager.GetActiveCondition<MapCondition_PsychicEmanation>().gender == pawn.gender)
+                {
+                    switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("PsychicSensitivity")))
+                    {
+                        case -1:
+                            {
+                                dict.Add(StatDefOf.PsychicSensitivity, -0.25f);
+                                break;
+                            }
+                        case 0:
+                            {
+                                dict.Add(StatDefOf.PsychicSensitivity, -0.5f);
+                                break;
+                            }
+                        case 1:
+                            {
+                                dict.Add(StatDefOf.PsychicSensitivity, -0.75f);
+                                break;
+                            }
+                        case 2:
+                            {
+                                dict.Add(StatDefOf.PsychicSensitivity, -1f);
+                                break;
+                            }
+                    }
+                }
+            }
+
+            if (Find.MapConditionManager.ConditionIsActive(MapConditionDef.Named("PsychicSoothe")))
+            {
+                if (Find.MapConditionManager.GetActiveCondition<MapCondition_PsychicEmanation>().gender == pawn.gender)
+                {
+                    switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("PsychicSensitivity")))
+                    {
+                        case -1:
+                            {
+                                dict.Add(StatDefOf.PsychicSensitivity, 1f);
+                                break;
+                            }
+                        case 0:
+                            {
+                                dict.Add(StatDefOf.PsychicSensitivity, 0.75f);
+                                break;
+                            }
+                        case 1:
+                            {
+                                dict.Add(StatDefOf.PsychicSensitivity, 0.5f);
+                                break;
+                            }
+                        case 2:
+                            {
+                                dict.Add(StatDefOf.PsychicSensitivity, 0.25f);
+                                break;
+                            }
+                    }
+                }
+            }
             // Adds manual prioritiy adjustments 
 
 

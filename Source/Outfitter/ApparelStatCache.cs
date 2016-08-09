@@ -459,6 +459,11 @@ namespace AutoEquip
                         _targetTemperatures.max -= 20;
                       }
 
+                    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_VolcanicWinter>().Any())
+                    {
+                        _targetTemperatures.min -= 7;
+                        _targetTemperatures.max -= 7;
+                    }
                     var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
                     pawnSave.targetTemperaturesOverride = false;
                 }
