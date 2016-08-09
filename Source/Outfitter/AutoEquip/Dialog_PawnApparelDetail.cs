@@ -136,7 +136,6 @@ namespace Outfitter
                 // make infusions ready
                 InfusionSet infusions;
                 bool infused = false;
-                StatMod mod = null;
                 InfusionDef prefix = null;
                 InfusionDef suffix = null;
                 if (_apparel.TryGetInfusions(out infusions))
@@ -209,18 +208,13 @@ namespace Outfitter
                     listRect.yMin = itemRect.yMax;
                 }
                 // infusions
+                bool drawline = false;
                 if (infused)
                 {
-                    float subscore = _apparel.GetStatValue(statPriority.Stat);
-
-                    itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
-                    if (Mouse.IsOver(itemRect))
-                    {
-                        GUI.DrawTexture(itemRect, TexUI.HighlightTex);
-                        GUI.color = Color.white;
-                    }
+                    float subscore = 1f;
 
                     // prefix
+                    StatMod mod = null;
                     if (!infusions.PassPre && prefix.GetStatValue(statPriority.Stat, out mod))
                     {
                         subscore += mod.offset * statPriority.Weight;
@@ -234,18 +228,26 @@ namespace Outfitter
                     else
                     {
                         subscore += mod.offset * statPriority.Weight;
-                        subscore += score * (mod.multiplier - 1) * statPriority.Weight;
+                        subscore += subscore * (mod.multiplier - 1) * statPriority.Weight;
                     }
 
-                    DrawLine(ref itemRect,
-                    statPriority.Stat.label, labelWidth,
-                    subscore.ToString("N2"), baseValue,
-                    score.ToString("N2"), multiplierWidth,
-                    statPriority.Weight.ToString("N2"), finalValue);
+                    if (mod != null)
+                    {
+                        itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
+                        if (Mouse.IsOver(itemRect))
+                        {
+                            GUI.DrawTexture(itemRect, TexUI.HighlightTex);
+                            GUI.color = Color.white;
+                        }
+                        DrawLine(ref itemRect,
+                        statPriority.Stat.label, labelWidth,
+                        subscore.ToString("N2"), baseValue,
+                        score.ToString("N2"), multiplierWidth,
+                        statPriority.Weight.ToString("N2"), finalValue);
 
-                    listRect.yMin = itemRect.yMax;
-
-                 //   score += subscore;
+                        listRect.yMin = itemRect.yMax;
+                    }
+                    //   score += subscore;
 
                     //        Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score);
                 }
