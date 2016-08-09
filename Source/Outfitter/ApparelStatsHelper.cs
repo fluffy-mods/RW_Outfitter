@@ -19,11 +19,10 @@ namespace AutoEquip
 
         public static FloatRange MinMaxTemperatureRange => new FloatRange(-100, 100);
 
-        // exact copy of vanilla - couldn't be bothered with reflection
+        // New curve
         public static readonly SimpleCurve HitPointsPercentScoreFactorCurve = new SimpleCurve
         {
-
-                        new CurvePoint( 0.0f, 0.05f ),
+            new CurvePoint( 0.0f, 0.05f ),
             new CurvePoint( 0.4f, 0.3f ),
             new CurvePoint( 0.6f, 0.75f ),
             new CurvePoint( 1f, 1f )
@@ -155,12 +154,50 @@ namespace AutoEquip
                 }
             }
 
+            foreach (StatDef key in new List<StatDef>(dict.Keys))
+            {
+                if (key == StatDef.Named("MoveSpeed"))
+                {
+                    switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("SpeedOffset")))
+                    {
+                        case -1:
+                            dict[key] *= 1.5f;
+                            break;
+                        case 1:
+                            dict[key] *= 0.5f;
+                            break;
+                        case 2:
+                            dict[key] *= 0.25f;
+                            break;
+                    }
+                }
+
+                if (key == StatDef.Named("WorkSpeedGlobal"))
+                {
+                    switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("Industriousness")))
+                    {
+                        case -2:
+                            dict[key] *= 2f;
+                            break;
+                        case -1:
+                            dict[key] *= 1.5f;
+                            break;
+                        case 1:
+                            dict[key] *= 0.5f;
+                            break;
+                        case 2:
+                            dict[key] *= 0.25f;
+                            break;
+                    }
+                }
+            }
+
             // normalize weights
             float max = dict.Values.Select(Math.Abs).Max();
             foreach (StatDef key in new List<StatDef>(dict.Keys))
             {
-                // normalize max of absolute weigths to be 1
-                dict[key] /= max / 1f;
+                // normalize max of absolute weigths to be 0.75
+                dict[key] /= max / 0.75f;
             }
 
             return dict;
@@ -298,7 +335,7 @@ namespace AutoEquip
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("WorkSpeedGlobal"), 0.1f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MoveSpeed"), 0.3f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("PlantWorkSpeed"), 0.5f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("HarvestFailChance"), -1f);
+                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("HarvestFailChance"), -0.5f);
                     yield break;
                 case "Mining":
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("WorkSpeedGlobal"), 0.1f);
@@ -307,7 +344,7 @@ namespace AutoEquip
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("CarryingCapacity"), 0.3f);
                     yield break;
                 case "Repair":
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("FixBrokenDownBuildingFailChance"), -1f);
+                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("FixBrokenDownBuildingFailChance"), -0.5f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("WorkSpeedGlobal"), 0.3f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MoveSpeed"), 0.1f);
                     yield break;
@@ -331,8 +368,8 @@ namespace AutoEquip
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MoveSpeed"), 0.05f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("WorkSpeedGlobal"), 0.2f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("CookSpeed"), 1f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("FoodPoisonChance"), -2f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("BrewingSpeed"), 1);
+                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("FoodPoisonChance"), -0.5f);
+                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("BrewingSpeed"), 1f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ButcheryFleshSpeed"), 1f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ButcheryFleshEfficiency"), 1f);
                     yield break;
