@@ -4,9 +4,9 @@ using System.Linq;
 using RimWorld;
 using Verse;
 
-namespace Outfitter
+namespace AutoEquip
 {
-    public class MainTabWindow_Outfitter : MainTabWindow
+    public class MainTabWindow_AutoEquip : MainTabWindow
     {
         public override void PostOpen()
         {
@@ -18,22 +18,22 @@ namespace Outfitter
             // log it, because we can!
             Log.Message( String.Join( "\n", groups.Select( group => group.LabelCap ).ToArray() ) );
 
-            foreach ( Pawn pawn in Find.ListerPawns.FreeColonistsSpawned )
-            {
-                Log.Message( pawn.NameStringShort + " stat priorities:\n" +
-                             String.Join( "\n",
-                                          pawn.GetWeightedApparelStats()
-                                              .Select( stat => stat.Key.LabelCap + ": " + stat.Value )
-                                              .ToArray() ) );
-
-                Log.Message( String.Join( "\n",
-                                          Find.ListerThings.ThingsInGroup( ThingRequestGroup.Apparel )
-                                              .Select(
-                                                  app =>
-                                                      app.LabelCap + ": " +
-                                                      ApparelStatsHelper.ApparelScoreRaw( app as Apparel, pawn ) )
-                                              .ToArray() ) );
-            }
+        //  foreach ( Pawn pawn in Find.ListerPawns.FreeColonistsSpawned )
+        //  {
+        //      Log.Message( pawn.NameStringShort + " stat priorities:\n" +
+        //                   String.Join( "\n",
+        //                                pawn.StatCache()
+        //                                    .Select( stat => stat.Key.LabelCap + ": " + stat.Value )
+        //                                    .ToArray() ) );
+        //
+        //      Log.Message( String.Join( "\n",
+        //                                Find.ListerThings.ThingsInGroup( ThingRequestGroup.Apparel )
+        //                                    .Select(
+        //                                        app =>
+        //                                            app.LabelCap + ": " +
+        //                                            ApparelStatsHelper.ApparelScoreRaw( app as Apparel, pawn ) )
+        //                                    .ToArray() ) );
+        //  }
         }
     }
 }

@@ -3,60 +3,81 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using CommunityCoreLibrary;
-using EdB.Interface;
 using RimWorld;
 using Verse;
 
-namespace Outfitter
+namespace AutoEquip
 {
-    public class InjectDetour : SpecialInjector 
-    {
-        public override void Inject()
-        {
-            // detour apparel selection methods
-            MethodInfo source = typeof (JobGiver_OptimizeApparel).GetMethod( "ApparelScoreGain",
-                                                                             BindingFlags.Static | BindingFlags.Public );
-            MethodInfo destination = typeof (ApparelStatsHelper).GetMethod( "ApparelScoreGain",
-                                                                            BindingFlags.Static | BindingFlags.Public );
-
-            Detours.TryDetourFromTo( source, destination );
-        }
-    }
 
     public class InjectTab : SpecialInjector
     {
-        public override void Inject()
+        public override bool Inject()
         {
             // inject ITab into all humanlikes
-            foreach ( ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading.Where( td => td.category == ThingCategory.Pawn && td.race.Humanlike ) )
+            foreach (ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading.Where(td => td.category == ThingCategory.Pawn && td.race.Humanlike))
             {
-                if( def.inspectorTabs == null || def.inspectorTabs.Count == 0 )
+                if (def.inspectorTabs == null || def.inspectorTabs.Count == 0)
                 {
                     def.inspectorTabs = new List<Type>();
                     def.inspectorTabsResolved = new List<ITab>();
                 }
-                if( def.inspectorTabs.Contains( typeof( ITab_Pawn_Outfitter ) ) )
+                if (def.inspectorTabs.Contains(typeof(ITab_Pawn_AutoEquip)))
                 {
-                    return;
+                    return false;
                 }
 
-                def.inspectorTabs.Add( typeof( ITab_Pawn_Outfitter ) );
-                def.inspectorTabsResolved.Add( ITabManager.GetSharedInstance( typeof( ITab_Pawn_Outfitter ) ) );
+                def.inspectorTabs.Add(typeof(ITab_Pawn_AutoEquip));
+                def.inspectorTabsResolved.Add(ITabManager.GetSharedInstance(typeof(ITab_Pawn_AutoEquip)));
             }
 
-            // have EdB reload the tabs
-            // There appears to be a race condition between EdB tab replacements and our extra tab. If EdB goes first, ours does not get shown until EdB refreshes tabs.
-            // TODO: Figure out how to get to the ComponentTabReplacement to call the reset there
-            foreach ( IPreference preference in Preferences.Instance.Groups.SelectMany( group => group.Preferences ) )
-            {
-                if ( preference is PreferenceTabArt )
-                {
-                    // insanely silly on off toggle just to get EdB to set the dirty toggle and reload ITabs so our custom one should always get loaded.
-                    ( (PreferenceTabArt)preference ).Value = !( (PreferenceTabArt)preference ).Value;
-                    ( (PreferenceTabArt)preference ).Value = !( (PreferenceTabArt)preference ).Value;
-                    break;
-                }
-            }
+            return true;
         }
+    }
+
+    public class ITabInjector : SpecialInjector
+    {
+
+        public override bool Inject()
+        {
+            // get reference to lists of itabs
+            var itabs = ThingDefOf.Human.inspectorTabs;
+            var itabsResolved = ThingDefOf.Human.inspectorTabsResolved;
+
+#if DEBUG
+            Log.Message("Inspector tab types on humans:");
+            foreach (var tab in itabs)
+            {
+                Log.Message("\t" + tab.Name);
+            }
+            Log.Message("Resolved tab instances on humans:");
+            foreach (var tab in itabsResolved)
+            {
+                Log.Message("\t" + tab.labelKey.Translate());
+            }
+#endif
+
+            // Vanilla Replacement
+
+            // replace ITab in the unresolved list
+            var index = itabs.IndexOf(typeof(ITab_Pawn_Gear));
+            if (index != -1)
+            {
+                itabs.Remove(typeof(ITab_Pawn_Gear));
+                itabs.Insert(index, typeof(ITab_Pawn_GearModded));
+            }
+
+            // replace resolved ITab, if needed.
+            var oldGearTab = ITabManager.GetSharedInstance(typeof(ITab_Pawn_Gear));
+            var newGearTab = ITabManager.GetSharedInstance(typeof(ITab_Pawn_GearModded));
+            if (!itabsResolved.NullOrEmpty() && itabsResolved.Contains(oldGearTab))
+            {
+                int resolvedIndex = itabsResolved.IndexOf(oldGearTab);
+                itabsResolved.Insert(resolvedIndex, newGearTab);
+                itabsResolved.Remove(oldGearTab);
+            }
+
+            return true;
+        }
+
     }
 }
