@@ -5,17 +5,17 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace AutoEquip
+namespace Outfitter
 {
-    public class ITab_Pawn_AutoEquip : ITab
+    public class ITab_Pawn_Outfitter : ITab
     {
         private Vector2 _scrollPosition = Vector2.zero;
 
 
-        public ITab_Pawn_AutoEquip()
+        public ITab_Pawn_Outfitter()
         {
             size = new Vector2(432f, 600f);
-            labelKey = "AutoEquipTab";
+            labelKey = "OutfitterTab";
         }
 
         protected override void FillTab()
@@ -41,7 +41,7 @@ namespace AutoEquip
             cur.y += 10f;
 
             // temperature slider
-            //    SaveablePawn pawnStatCache = MapComponent_AutoEquip.Get.GetCache(SelPawn);
+            //    SaveablePawn pawnStatCache = MapComponent_Outfitter.Get.GetCache(SelPawn);
             ApparelStatCache pawnStatCache = SelPawn.GetApparelStatCache();
             FloatRange targetTemps = pawnStatCache.TargetTemperatures;
             FloatRange minMaxTemps = ApparelStatsHelper.MinMaxTemperatureRange;
@@ -65,7 +65,7 @@ namespace AutoEquip
                 if (Widgets.ButtonImage(tempResetRect, TexButton.resetButton))
                 {
                     pawnStatCache.targetTemperaturesOverride = false;
-               //   var saveablePawn = MapComponent_AutoEquip.Get.GetCache(SelPawn);
+               //   var saveablePawn = MapComponent_Outfitter.Get.GetCache(SelPawn);
                //     saveablePawn.targetTemperaturesOverride = false;
                     pawnStatCache.UpdateTemperatureIfNecessary(true);
                 }

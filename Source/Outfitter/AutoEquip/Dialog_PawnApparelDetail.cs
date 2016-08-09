@@ -4,7 +4,7 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace AutoEquip
+namespace Outfitter
 {
     public class DialogPawnApparelDetail : Window
     {
@@ -265,7 +265,7 @@ namespace AutoEquip
             score += conf.ApparelScoreRaw_Temperature(_apparel, _pawn) / 10f;
             itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
             DrawLine(ref itemRect, 
-                "AutoEquipTemperature".Translate(), labelWidth,
+                "OutfitterTemperature".Translate(), labelWidth,
                 (conf.ApparelScoreRaw_Temperature(_apparel, _pawn)/10f).ToString("N2"), baseValue, 
                 "", multiplierWidth, 
                 score.ToString("N2"), finalValue);
@@ -278,7 +278,7 @@ namespace AutoEquip
             score += armor;
 
             DrawLine(ref itemRect,
-                "AutoEquipArmor".Translate(), labelWidth,
+                "OutfitterArmor".Translate(), labelWidth,
                 armor.ToString("N2"), baseValue,
                 "", multiplierWidth,
                 score.ToString("N2"), finalValue);
@@ -291,7 +291,7 @@ namespace AutoEquip
                 score *= ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
 
                 DrawLine(ref itemRect,
-                "AutoEquipHitPoints".Translate(), labelWidth,
+                "OutfitterHitPoints".Translate(), labelWidth,
                 x.ToString("N2"), baseValue,
                 "", multiplierWidth,
                 score.ToString("N2"), finalValue);
@@ -300,7 +300,7 @@ namespace AutoEquip
 
             itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
             DrawLine(ref itemRect,
-                "AutoEquipTotal".Translate(), labelWidth,
+                "OutfitterTotal".Translate(), labelWidth,
                 "", baseValue,
                 "", multiplierWidth,
                 conf.ApparelScoreRaw(_apparel, _pawn).ToString("N2"), finalValue);

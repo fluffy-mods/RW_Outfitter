@@ -2,7 +2,7 @@
 using RimWorld;
 using Verse;
 
-namespace AutoEquip
+namespace Outfitter
 {
     public class Saveable_Pawn_StatDef : IExposable
     {
@@ -26,7 +26,7 @@ namespace AutoEquip
 */
         public void Delete(Pawn pawn)
         {
-            SaveablePawn newPawnSaveable = MapComponent_AutoEquip.Get.GetCache(pawn);
+            SaveablePawn newPawnSaveable = MapComponent_Outfitter.Get.GetCache(pawn);
             newPawnSaveable.Stats.Remove(this);
         }
 

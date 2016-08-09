@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ThingDefs>
 	<ThingDef>
-		<defName>AutoEquip</defName>
+		<defName>Outfitter</defName>
 		<category>Building</category>
 		<menuHidden>true</menuHidden>
-		<label>AutoEquipModInitializer</label>
-		<thingClass>AutoEquip.ModInitializer</thingClass>
+		<label>OutfitterModInitializer</label>
+		<thingClass>Outfitter.ModInitializer</thingClass>
 		<inspectorTabs>
-			<li>AutoEquip.ModInitializer</li>
+			<li>Outfitter.ModInitializer</li>
 		</inspectorTabs>
 	</ThingDef>
 </ThingDefs>

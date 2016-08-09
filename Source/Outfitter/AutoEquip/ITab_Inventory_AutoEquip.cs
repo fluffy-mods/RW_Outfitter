@@ -7,7 +7,7 @@ using Verse;
 using Verse.AI;
 using Verse.Sound;
 
-namespace AutoEquip
+namespace Outfitter
 {
     public class ITab_Pawn_GearModded : ITab
     {
@@ -348,12 +348,12 @@ namespace AutoEquip
                         (thing is Apparel))
                     {
 
-                        floatOptionList.Add(new FloatMenuOption("AutoEquip Details", delegate
+                        floatOptionList.Add(new FloatMenuOption("Outfitter Details", delegate
                         {
                             Find.WindowStack.Add(new DialogPawnApparelDetail(SelPawn, (Apparel)thing));
                         }, MenuOptionPriority.Medium, null, null));
 
-                        floatOptionList.Add(new FloatMenuOption("AutoEquip Comparer", delegate
+                        floatOptionList.Add(new FloatMenuOption("Outfitter Comparer", delegate
                         {
                 //            Find.WindowStack.Add(new Dialog_PawnApparelComparer(pawnSave.Pawn, (Apparel)thing));
                         }, MenuOptionPriority.Medium, null, null));

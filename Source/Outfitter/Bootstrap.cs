@@ -6,7 +6,7 @@ using CommunityCoreLibrary;
 using RimWorld;
 using Verse;
 
-namespace AutoEquip
+namespace Outfitter
 {
 
     public class InjectTab : SpecialInjector
@@ -21,13 +21,13 @@ namespace AutoEquip
                     def.inspectorTabs = new List<Type>();
                     def.inspectorTabsResolved = new List<ITab>();
                 }
-                if (def.inspectorTabs.Contains(typeof(ITab_Pawn_AutoEquip)))
+                if (def.inspectorTabs.Contains(typeof(ITab_Pawn_Outfitter)))
                 {
                     return false;
                 }
 
-                def.inspectorTabs.Add(typeof(ITab_Pawn_AutoEquip));
-                def.inspectorTabsResolved.Add(ITabManager.GetSharedInstance(typeof(ITab_Pawn_AutoEquip)));
+                def.inspectorTabs.Add(typeof(ITab_Pawn_Outfitter));
+                def.inspectorTabsResolved.Add(ITabManager.GetSharedInstance(typeof(ITab_Pawn_Outfitter)));
             }
 
             return true;

@@ -7,7 +7,7 @@
   <StatPriorityDelete>Remove priority for {0}</StatPriorityDelete>
   <StatPriorityAdd>Add new priority</StatPriorityAdd>
   <TemperatureRangeReset>Reset temperature range to seasonal temperature</TemperatureRangeReset>
-  <AutoEquipTab>AutoEquip</AutoEquipTab>
+  <OutfitterTab>Outfitter</OutfitterTab>
 
 
 
@@ -16,14 +16,14 @@
   <ToDrop>To Drop</ToDrop>
   <AverageStat>Pawn Stat Offset</AverageStat>
   <AverageWorkStat>Pawn Work Offset</AverageWorkStat>
-  <AutoEquipHitPoints>Hit Points Modifier</AutoEquipHitPoints>
-  <AutoEquipTemperature>Outdoor Temperature Modifier</AutoEquipTemperature>
-  <AutoEquipTotal>Apparel Total Stat</AutoEquipTotal>
-  <AutoEquipArmor>Protection Score</AutoEquipArmor>
+  <OutfitterHitPoints>Hit Points Modifier</OutfitterHitPoints>
+  <OutfitterTemperature>Outdoor Temperature Modifier</OutfitterTemperature>
+  <OutfitterTotal>Apparel Total Stat</OutfitterTotal>
+  <OutfitterArmor>Protection Score</OutfitterArmor>
   <BasicStatusOfApparel>Basic Apparel Offset</BasicStatusOfApparel>
-  <AutoEquipGlobalSelection>Global Selection</AutoEquipGlobalSelection>
+  <OutfitterGlobalSelection>Global Selection</OutfitterGlobalSelection>
   <AppendIndividualStats>Append Individual Status</AppendIndividualStats>
-  <AutoEquipStatus>Status...</AutoEquipStatus>
+  <OutfitterStatus>Status...</OutfitterStatus>
   <PreferedTemperature>Prefered Temperature</PreferedTemperature>
   <EquipmentAndInventory>Equipment And Inventory</EquipmentAndInventory>
   <WornApparel>Worn Apparel</WornApparel>

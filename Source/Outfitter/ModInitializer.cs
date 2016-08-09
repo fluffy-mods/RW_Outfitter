@@ -9,7 +9,7 @@ using UnityEngine;
 using Verse;
 using Object = UnityEngine.Object;
 
-namespace AutoEquip
+namespace Outfitter
 {
 
     public class ModInitializer : ITab
@@ -58,7 +58,7 @@ namespace AutoEquip
             }
             catch (Exception)
             {
-                Log.Error("Could not Detour AutoEquip.");
+                Log.Error("Could not Detour Outfitter.");
                 throw;
             }
             OnLevelWasLoaded(-1);

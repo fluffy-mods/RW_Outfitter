@@ -1,4 +1,4 @@
-﻿// AutoEquip/ApparelStatCache.cs
+﻿// Outfitter/ApparelStatCache.cs
 // 
 // Copyright Karel Kroeze, 2016.
 // 
@@ -11,7 +11,7 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace AutoEquip
+namespace Outfitter
 {
     public enum StatAssignment
     {
@@ -47,7 +47,7 @@ namespace AutoEquip
         {
             get
             {
-                var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
+                var pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
                 if (pawnSave.targetTemperaturesOverride)
                 {
                     targetTemperaturesOverride = pawnSave.targetTemperaturesOverride;
@@ -74,7 +74,7 @@ namespace AutoEquip
                 _targetTemperatures = value;
                 targetTemperaturesOverride = true;
 
-                var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
+                var pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
                 pawnSave.TargetTemperatures = value;
                 pawnSave.targetTemperaturesOverride = true;
             }
@@ -85,7 +85,7 @@ namespace AutoEquip
         {
             get
             {
-                var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
+                var pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
 
                 // update auto stat priorities roughly between every vanilla gear check cycle
                 if (Find.TickManager.TicksGame - _lastStatUpdate > 1900)
@@ -323,7 +323,7 @@ namespace AutoEquip
         public float ApparelScoreRaw_Temperature(Apparel apparel, Pawn pawn)
         {
             // temperature
-            SaveablePawn newPawnSaveable = MapComponent_AutoEquip.Get.GetCache(pawn);
+            SaveablePawn newPawnSaveable = MapComponent_Outfitter.Get.GetCache(pawn);
 
             FloatRange targetTemperatures = pawn.GetApparelStatCache().TargetTemperatures;
 
@@ -464,7 +464,7 @@ namespace AutoEquip
                         _targetTemperatures.min -= 7;
                         _targetTemperatures.max -= 7;
                     }
-                    var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
+                    var pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
                     pawnSave.targetTemperaturesOverride = false;
                 }
 
@@ -567,7 +567,7 @@ namespace AutoEquip
             {
                 pawn.GetApparelStatCache()._cache.Remove(this);
 
-                var pawnSave = MapComponent_AutoEquip.Get.GetCache(pawn);
+                var pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
                 pawnSave.Stats.RemoveAll(i => i.Stat ==Stat);
             }
 
@@ -577,7 +577,7 @@ namespace AutoEquip
                 Weight = stats[Stat];
                 Assignment = StatAssignment.Automatic;
 
-                var pawnSave = MapComponent_AutoEquip.Get.GetCache(pawn);
+                var pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
                 pawnSave.Stats.RemoveAll(i => i.Stat == Stat);
             }
         }

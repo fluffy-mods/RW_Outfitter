@@ -4,9 +4,9 @@ using System.Linq;
 using RimWorld;
 using Verse;
 
-namespace AutoEquip
+namespace Outfitter
 {
-    public class MainTabWindow_AutoEquip : MainTabWindow
+    public class MainTabWindow_Outfitter : MainTabWindow
     {
         public override void PostOpen()
         {

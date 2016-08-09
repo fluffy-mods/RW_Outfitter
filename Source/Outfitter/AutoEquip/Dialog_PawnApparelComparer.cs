@@ -4,7 +4,7 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace AutoEquip
+namespace Outfitter
 {
     public class Dialog_PawnApparelComparer : Window
     {
@@ -76,7 +76,7 @@ namespace AutoEquip
 
             Widgets.BeginScrollView(groupRect, ref scrollPosition, viewRect);
 
-            allApparels = allApparels.OrderByDescending(i => { float g; if (pawnAutoEquip.CalculateApparelScoreGain(i, out g)) return g; return -1000f; }).ToList();
+            allApparels = allApparels.OrderByDescending(i => { float g; if (pawnOutfitter.CalculateApparelScoreGain(i, out g)) return g; return -1000f; }).ToList();
 
             foreach (Apparel currentAppel in allApparels)
             {
@@ -112,19 +112,19 @@ namespace AutoEquip
                 }
 
                 float gain;
-                if (pawnAutoEquip.CalculateApparelScoreGain(currentAppel, out gain))
+                if (pawnOutfitter.CalculateApparelScoreGain(currentAppel, out gain))
                     DrawLine(ref itemRect,
                         currentAppel, currentAppel.LabelCap, apparelLabelWidth,
                         equiped, equiped == null ? null : equiped.LabelCap, apparelEquipedWidth,
                         target, target == null ? null : target.LabelCap, apparelOwnerWidth,
-                        pawnAutoEquip.ApparelScoreRaw(currentAppel).ToString("N5"), apparelScoreWidth,
+                        pawnOutfitter.ApparelScoreRaw(currentAppel).ToString("N5"), apparelScoreWidth,
                         gain.ToString("N5"), apparelGainWidth);
                 else
                     DrawLine(ref itemRect,
                         currentAppel, currentAppel.LabelCap, apparelLabelWidth,
                         equiped, equiped == null ? null : equiped.LabelCap, apparelEquipedWidth,
                         target, target == null ? null : target.LabelCap, apparelOwnerWidth,
-                        pawnAutoEquip.ApparelScoreRaw(currentAppel).ToString("N5"), apparelScoreWidth,
+                        pawnOutfitter.ApparelScoreRaw(currentAppel).ToString("N5"), apparelScoreWidth,
                         "No Allow", apparelGainWidth);
 
                 listRect.yMin = itemRect.yMax;

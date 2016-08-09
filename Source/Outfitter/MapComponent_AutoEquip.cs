@@ -5,9 +5,9 @@ using System.Text;
 using RimWorld;
 using Verse;
 
-namespace AutoEquip
+namespace Outfitter
 {
-     class MapComponent_AutoEquip : MapComponent
+     class MapComponent_Outfitter : MapComponent
     {
         public List<SaveablePawn> PawnCache = new List<SaveablePawn>();
 
@@ -27,14 +27,14 @@ namespace AutoEquip
             // return PawnApparelStatCaches[pawn];
         }
 
-        public static MapComponent_AutoEquip Get
+        public static MapComponent_Outfitter Get
         {
             get
             {
-                MapComponent_AutoEquip getComponent = Find.Map.components.OfType<MapComponent_AutoEquip>().FirstOrDefault();
+                MapComponent_Outfitter getComponent = Find.Map.components.OfType<MapComponent_Outfitter>().FirstOrDefault();
                 if (getComponent == null)
                 {
-                    getComponent = new MapComponent_AutoEquip();
+                    getComponent = new MapComponent_Outfitter();
                     Find.Map.components.Add(getComponent);
                 }
 

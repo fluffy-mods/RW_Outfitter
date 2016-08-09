@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using Verse;
 
-namespace AutoEquip
+namespace Outfitter
 {
     public static class Widgets_FloatRange
     {

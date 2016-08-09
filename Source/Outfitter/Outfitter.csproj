@@ -7,8 +7,8 @@
     <ProjectGuid>{674578FF-B7C7-4142-A8E3-CBB52BD8B996}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AutoEquip</RootNamespace>
-    <AssemblyName>AutoEquip</AssemblyName>
+    <RootNamespace>Outfitter</RootNamespace>
+    <AssemblyName>Outfitter</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>

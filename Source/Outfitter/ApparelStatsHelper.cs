@@ -1,4 +1,4 @@
-﻿// AutoEquip/ApparelStatsHelper.cs
+﻿// Outfitter/ApparelStatsHelper.cs
 // 
 // Copyright Karel Kroeze, 2016.
 // 
@@ -10,7 +10,7 @@ using System.Linq;
 using RimWorld;
 using Verse;
 
-namespace AutoEquip
+namespace Outfitter
 {
     public static class ApparelStatsHelper
     {

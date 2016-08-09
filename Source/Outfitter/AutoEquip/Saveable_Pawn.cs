@@ -4,7 +4,7 @@ using System.Linq;
 using RimWorld;
 using Verse;
 
-namespace AutoEquip
+namespace Outfitter
 {
     public class SaveablePawn : IExposable
     {
