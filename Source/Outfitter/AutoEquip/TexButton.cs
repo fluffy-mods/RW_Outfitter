@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Verse
 {
     [StaticConstructorOnStartup]
-    internal class TexButton
+    internal class LocalTextures
     {
          public static readonly Texture2D Info = ContentFinder<Texture2D>.Get("UI/Buttons/InfoButton", true);
 

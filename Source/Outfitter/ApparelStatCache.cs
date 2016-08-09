@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Infused;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -171,6 +172,7 @@ namespace Outfitter
             _lastTempUpdate = -5000;
         }
 
+
         public float ApparelScoreRaw(Apparel apparel, Pawn pawn)
         {
             // relevant apparel stats
@@ -194,18 +196,18 @@ namespace Outfitter
             // start score at 1
             float score = 1;
 
-            //// make infusions ready
-            //InfusionSet infusions;
-            //bool infused = false;
-            //StatMod mod;
-            //InfusionDef prefix = null;
-            //InfusionDef suffix = null;
-            //if ( apparel.TryGetInfusions( out infusions ) )
-            //{
-            //    infused = true;
-            //    prefix = infusions.Prefix.ToInfusionDef();
-            //    suffix = infusions.Suffix.ToInfusionDef();
-            //}
+            // make infusions ready
+            InfusionSet infusions;
+            bool infused = false;
+            StatMod mod = null;
+            InfusionDef prefix = null;
+            InfusionDef suffix = null;
+            if (apparel.TryGetInfusions(out infusions))
+            {
+                infused = true;
+                prefix = infusions.Prefix;
+                suffix = infusions.Suffix;
+            }
 
             // add values for each statdef modified by the apparel
 
@@ -236,12 +238,7 @@ namespace Outfitter
                         //  statStrength *= -1;
                     }
 
-                        score += statValue * statStrength;
-
-
-
-
-
+                    score += statValue * statStrength;
 
                     // base value
                     float norm = apparel.GetStatValue(statPriority.Stat);
@@ -263,26 +260,28 @@ namespace Outfitter
                     //debug.AppendLine( statWeightPair.Key.LabelCap + ": " + score );
                 }
 
-                //// infusions
-                //if( infused ) { 
-                //    // prefix
-                //    if ( !infusions.PassPre &&
-                //         prefix.GetStatValue( statPriority.Stat, out mod ) )
-                //    {
-                //        score += mod.offset * statPriority.Weight;
-                //        score += score * ( mod.multiplier - 1 ) * statPriority.Weight;
+                // infusions
+                if (infused)
+                {
+                    // prefix
+                    if (!infusions.PassPre && prefix.GetStatValue(statPriority.Stat, out mod))
+                    {
+                        score += mod.offset * statPriority.Weight;
+                        score += score * (mod.multiplier - 1) * statPriority.Weight;
 
-                //        //debug.AppendLine( statWeightPair.Key.LabelCap + " infusion: " + score );
-                //    }
-                //    if ( !infusions.PassSuf &&
-                //         suffix.GetStatValue( statPriority.Stat, out mod ) )
-                //    {
-                //        score += mod.offset * statPriority.Weight;
-                //        score += score * ( mod.multiplier - 1 ) * statPriority.Weight;
+            //            Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score );
+                    }
+                    if (infusions.PassSuf || !suffix.GetStatValue(statPriority.Stat, out mod))
+                    {
+                    }
+                    else
+                    {
+                        score += mod.offset * statPriority.Weight;
+                        score += score * (mod.multiplier - 1) * statPriority.Weight;
+                    }
 
-                //        //debug.AppendLine( statWeightPair.Key.LabelCap + " infusion: " + score );
-                //    }
-                //}
+            //        Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score);
+                }
             }
             score += 0.125f * ApparelScoreRaw_ProtectionBaseStat(apparel);
             // offset for apparel hitpoints 
@@ -292,7 +291,7 @@ namespace Outfitter
                 score *= ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
             }
 
-            score += ApparelScoreRaw_Temperature(apparel, pawn) / 10f;
+            score += ApparelScoreRaw_Temperature(apparel, pawn, infused, infusions, mod, prefix, suffix) / 10f;
 
             return score;
         }
@@ -320,7 +319,7 @@ namespace Outfitter
             }
         }
 */
-        public float ApparelScoreRaw_Temperature(Apparel apparel, Pawn pawn)
+        public float ApparelScoreRaw_Temperature(Apparel apparel, Pawn pawn, bool infused = false, InfusionSet infusions = null, StatMod mod = null, InfusionDef prefix = null, InfusionDef suffix = null)
         {
             // temperature
             SaveablePawn newPawnSaveable = MapComponent_Outfitter.Get.GetCache(pawn);
@@ -353,32 +352,32 @@ namespace Outfitter
             float insulationHeat = apparel.GetStatValue(StatDefOf.Insulation_Heat);
 
             // offsets on apparel infusions
-            //if( infused )
-            //{
-            //    // prefix
-            //    if( !infusions.PassPre &&
-            //         prefix.GetStatValue( StatDefOf.ComfyTemperatureMin, out mod ) )
-            //    {
-            //        insulationCold += mod.offset;
-            //    }
-            //    if( !infusions.PassPre &&
-            //         prefix.GetStatValue( StatDefOf.ComfyTemperatureMax, out mod ) )
-            //    {
-            //        insulationHeat += mod.offset;
-            //    }
+            if (infused)
+            {
+                // prefix
+                if (!infusions.PassPre &&
+                     prefix.GetStatValue(StatDefOf.ComfyTemperatureMin, out mod))
+                {
+                    insulationCold += mod.offset;
+                }
+                if (!infusions.PassPre &&
+                     prefix.GetStatValue(StatDefOf.ComfyTemperatureMax, out mod))
+                {
+                    insulationHeat += mod.offset;
+                }
 
-            //    // suffix
-            //    if( !infusions.PassSuf &&
-            //         suffix.GetStatValue( StatDefOf.ComfyTemperatureMin, out mod ) )
-            //    {
-            //        insulationCold += mod.offset;
-            //    }
-            //    if( !infusions.PassSuf &&
-            //         suffix.GetStatValue( StatDefOf.ComfyTemperatureMax, out mod ) )
-            //    {
-            //        insulationHeat += mod.offset;
-            //    }
-            //}
+                // suffix
+                if (!infusions.PassSuf &&
+                     suffix.GetStatValue(StatDefOf.ComfyTemperatureMin, out mod))
+                {
+                    insulationCold += mod.offset;
+                }
+                if (!infusions.PassSuf &&
+                     suffix.GetStatValue(StatDefOf.ComfyTemperatureMax, out mod))
+                {
+                    insulationHeat += mod.offset;
+                }
+            }
 
             // if this gear is currently worn, we need to make sure the contribution to the pawn's comfy temps is removed so the gear is properly scored
             if (pawn.apparel.WornApparel.Contains(apparel))
@@ -447,17 +446,17 @@ namespace Outfitter
                     _targetTemperatures = new FloatRange(Math.Max(temp - 12f, ApparelStatsHelper.MinMaxTemperatureRange.min),
                                                           Math.Min(temp + 12f, ApparelStatsHelper.MinMaxTemperatureRange.max));
 
-                      if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
-                      {
-                          _targetTemperatures.min += 20;
+                    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
+                    {
+                        _targetTemperatures.min += 20;
                         _targetTemperatures.max += 20;
-                      }
-                    
-                      if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
-                      {
-                          _targetTemperatures.min -= 20;
+                    }
+
+                    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
+                    {
+                        _targetTemperatures.min -= 20;
                         _targetTemperatures.max -= 20;
-                      }
+                    }
 
                     if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_VolcanicWinter>().Any())
                     {
@@ -495,7 +494,7 @@ namespace Outfitter
             if (stat.Assignment == StatAssignment.Manual)
             {
                 buttonTooltip = "StatPriorityDelete".Translate(stat.Stat.LabelCap);
-                if (Widgets.ButtonImage(buttonRect, TexButton.deleteButton))
+                if (Widgets.ButtonImage(buttonRect, LocalTextures.deleteButton))
                 {
                     stat.Delete(pawn);
                     stop_ui = true;
@@ -505,7 +504,7 @@ namespace Outfitter
             if (stat.Assignment == StatAssignment.Override)
             {
                 buttonTooltip = "StatPriorityReset".Translate(stat.Stat.LabelCap);
-                if (Widgets.ButtonImage(buttonRect, TexButton.resetButton))
+                if (Widgets.ButtonImage(buttonRect, LocalTextures.resetButton))
                 {
                     stat.Reset(pawn);
                     stop_ui = true;
@@ -568,7 +567,7 @@ namespace Outfitter
                 pawn.GetApparelStatCache()._cache.Remove(this);
 
                 var pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
-                pawnSave.Stats.RemoveAll(i => i.Stat ==Stat);
+                pawnSave.Stats.RemoveAll(i => i.Stat == Stat);
             }
 
             public void Reset(Pawn pawn)

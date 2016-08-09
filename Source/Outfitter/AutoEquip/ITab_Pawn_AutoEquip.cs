@@ -62,7 +62,7 @@ namespace Outfitter
 
             if (pawnStatCache.targetTemperaturesOverride)
             {
-                if (Widgets.ButtonImage(tempResetRect, TexButton.resetButton))
+                if (Widgets.ButtonImage(tempResetRect, LocalTextures.resetButton))
                 {
                     pawnStatCache.targetTemperaturesOverride = false;
                //   var saveablePawn = MapComponent_Outfitter.Get.GetCache(SelPawn);
@@ -83,7 +83,7 @@ namespace Outfitter
 
             // add button
             Rect addStatRect = new Rect(statsHeaderRect.xMax - 16f, statsHeaderRect.yMin + 10f, 16f, 16f);
-            if (Widgets.ButtonImage(addStatRect, TexButton.addButton))
+            if (Widgets.ButtonImage(addStatRect, LocalTextures.addButton))
             {
                 List<FloatMenuOption> options = new List<FloatMenuOption>();
                 foreach (StatDef def in SelPawn.NotYetAssignedStatDefs().OrderBy(i => i.label.ToString()))

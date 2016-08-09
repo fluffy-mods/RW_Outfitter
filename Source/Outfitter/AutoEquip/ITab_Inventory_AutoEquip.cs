@@ -220,18 +220,37 @@ namespace Outfitter
             Text.Anchor = TextAnchor.UpperLeft;
         }
 
+        private static readonly Color _highlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+
+        private static readonly Color _thingLabelColor = new Color(0.9f, 0.9f, 0.9f, 1f);
+
         private void DrawThingRowModded(ref float y, float width, Thing thing, ApparelStatCache conf)
         {
             Apparel ap = thing as Apparel;
 
             Rect rect = new Rect(0f, y, width, ThingRowHeight);
-            Widgets.InfoCardButton(rect.width - 24f, y + 4f, thing.def);
+
+            if (Mouse.IsOver(rect))
+            {
+                GUI.color=_highlightColor;
+                GUI.DrawTexture(rect, TexUI.HighlightTex);
+            }
+            GUI.color= _thingLabelColor;
+
+            Rect rect2a = new Rect(rect.width - 24f, y+3f, 24f, 24f);
+            TutorUIHighlighter.HighlightOpportunity("InfoCard", rect);
+            TooltipHandler.TipRegion(rect2a, Translator.Translate("DefInfoTip"));
+            if (Widgets.ButtonImage(rect2a, LocalTextures.Info))
+            {
+                Find.WindowStack.Add(new Dialog_InfoCard(thing));
+            }
+
             rect.width -= 24f;
             if (this.CanControl)
             {
                 Rect rect2 = new Rect(rect.width - 24f, y + 3f, 24f, 24f);
                 TooltipHandler.TipRegion(rect2, "DropThing".Translate());
-                if (Widgets.ButtonImage(rect2, TexButton.Drop))
+                if (Widgets.ButtonImage(rect2, LocalTextures.Drop))
                 {
                     SoundDefOf.TickHigh.PlayOneShotOnCamera();
                     this.InterfaceDrop(thing);
@@ -399,7 +418,7 @@ namespace Outfitter
             {
                 Rect rect2 = new Rect(rect.width - 24f, y, 24f, 24f);
                 TooltipHandler.TipRegion(rect2, "DropThing".Translate());
-                if (Widgets.ButtonImage(rect2, TexButton.Drop))
+                if (Widgets.ButtonImage(rect2, LocalTextures.Drop))
                 {
                     SoundDefOf.TickHigh.PlayOneShotOnCamera();
                     this.InterfaceDrop(thing);

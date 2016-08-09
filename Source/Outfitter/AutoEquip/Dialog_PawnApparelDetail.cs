@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Infused;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -126,24 +127,26 @@ namespace Outfitter
             // start score at 1
             float score = 1;
 
-            //// make infusions ready
-            //InfusionSet infusions;
-            //bool infused = false;
-            //StatMod mod;
-            //InfusionDef prefix = null;
-            //InfusionDef suffix = null;
-            //if ( apparel.TryGetInfusions( out infusions ) )
-            //{
-            //    infused = true;
-            //    prefix = infusions.Prefix.ToInfusionDef();
-            //    suffix = infusions.Suffix.ToInfusionDef();
-            //}
 
             // add values for each statdef modified by the apparel
 
 
             foreach (ApparelStatCache.StatPriority statPriority in _pawn.GetApparelStatCache().StatCache)
             {
+                // make infusions ready
+                InfusionSet infusions;
+                bool infused = false;
+                StatMod mod = null;
+                InfusionDef prefix = null;
+                InfusionDef suffix = null;
+                if (_apparel.TryGetInfusions(out infusions))
+                {
+                    infused = true;
+                    prefix = infusions.Prefix;
+                    suffix = infusions.Suffix;
+                }
+
+
                 // statbases, e.g. armor
                 if (statBases.Contains(statPriority.Stat))
                 {
@@ -184,14 +187,14 @@ namespace Outfitter
 
                     if (statValue < 1) // flipped for calc + *-1
                     {
-                        statValue = 1/statValue;
+                        statValue = 1 / statValue;
                         statValue -= 1;
                         statStrength *= -1;
                         //          sumStatsValue += valueDisplay;
                     }
 
                     score += statValue * statStrength;
-                    
+
                     //      if (value != 1)
 
 
@@ -204,32 +207,52 @@ namespace Outfitter
                         statscore.ToString("N2"), finalValue);
 
                     listRect.yMin = itemRect.yMax;
+                }
+                // infusions
+                if (infused)
+                {
+                    float subscore = _apparel.GetStatValue(statPriority.Stat);
 
-
-
-                    // base value
-                    float norm = _apparel.GetStatValue(statPriority.Stat);
-                    float adjusted = norm;
-
-                    // add offset
-                    adjusted += _apparel.def.equippedStatOffsets.GetStatOffsetFromList(statPriority.Stat) *
-                                statPriority.Weight;
-
-                    // normalize
-                    if (norm != 0)
+                    itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
+                    if (Mouse.IsOver(itemRect))
                     {
-                        adjusted /= norm;
+                        GUI.DrawTexture(itemRect, TexUI.HighlightTex);
+                        GUI.color = Color.white;
                     }
 
-                    // multiply score to favour items with multiple offsets
-               //     score *= adjusted;
+                    // prefix
+                    if (!infusions.PassPre && prefix.GetStatValue(statPriority.Stat, out mod))
+                    {
+                        subscore += mod.offset * statPriority.Weight;
+                        subscore += subscore * (mod.multiplier - 1) * statPriority.Weight;
 
-                    //debug.AppendLine( statWeightPair.Key.LabelCap + ": " + score );
+                        //            Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score );
+                    }
+                    if (infusions.PassSuf || !suffix.GetStatValue(statPriority.Stat, out mod))
+                    {
+                    }
+                    else
+                    {
+                        subscore += mod.offset * statPriority.Weight;
+                        subscore += score * (mod.multiplier - 1) * statPriority.Weight;
+                    }
+
+                    DrawLine(ref itemRect,
+                    statPriority.Stat.label, labelWidth,
+                    subscore.ToString("N2"), baseValue,
+                    score.ToString("N2"), multiplierWidth,
+                    statPriority.Weight.ToString("N2"), finalValue);
+
+                    listRect.yMin = itemRect.yMax;
+
+                 //   score += subscore;
+
+                    //        Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score);
                 }
             }
 
             // EXPERIMENTAL
-      
+
             Widgets.EndScrollView();
             GUI.EndGroup();
 
@@ -261,13 +284,13 @@ namespace Outfitter
                 "1.00", baseValue,
                 "", multiplierWidth,
                 score.ToString("N2"), finalValue);
-            
+
             score += conf.ApparelScoreRaw_Temperature(_apparel, _pawn) / 10f;
             itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
-            DrawLine(ref itemRect, 
+            DrawLine(ref itemRect,
                 "OutfitterTemperature".Translate(), labelWidth,
-                (conf.ApparelScoreRaw_Temperature(_apparel, _pawn)/10f).ToString("N2"), baseValue, 
-                "", multiplierWidth, 
+                (conf.ApparelScoreRaw_Temperature(_apparel, _pawn) / 10f).ToString("N2"), baseValue,
+                "", multiplierWidth,
                 score.ToString("N2"), finalValue);
 
 
@@ -285,7 +308,7 @@ namespace Outfitter
 
             if (_apparel.def.useHitPoints)
             {
-            itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
+                itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
                 // durability on 0-1 scale
                 float x = _apparel.HitPoints / (float)_apparel.MaxHitPoints;
                 score *= ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);

@@ -53,9 +53,9 @@ namespace Outfitter
 
             // draw handles 
             Rect minHandleRect = new Rect(minHandlePos - 16f, sliderRect.center.y - 8f, 16f, 16f);
-            GUI.DrawTexture(minHandleRect, TexButton.FloatRangeSliderTex);
+            GUI.DrawTexture(minHandleRect, LocalTextures.FloatRangeSliderTex);
             Rect maxHandleRect = new Rect(maxHandlePos + 16f, sliderRect.center.y - 8f, -16f, 16f);
-            GUI.DrawTexture(maxHandleRect, TexButton.FloatRangeSliderTex);
+            GUI.DrawTexture(maxHandleRect, LocalTextures.FloatRangeSliderTex);
 
             // interactions
             Rect interactionRect = canvas;

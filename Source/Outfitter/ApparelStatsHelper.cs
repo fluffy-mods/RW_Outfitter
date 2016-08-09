@@ -41,6 +41,18 @@ namespace Outfitter
             return PawnApparelStatCaches[pawn];
         }
 
+        public static float GetInfusedStatValue(Apparel apparel, StatDef stat)
+        {
+            float statValue = apparel.GetStatValue(stat, true);
+            float num = statValue + apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat);
+            bool flag = statValue != 0f;
+            if (flag)
+            {
+                num /= statValue;
+            }
+            return num;
+        }
+
         public static Dictionary<StatDef, float> GetWeightedApparelStats(this Pawn pawn)
         {
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
