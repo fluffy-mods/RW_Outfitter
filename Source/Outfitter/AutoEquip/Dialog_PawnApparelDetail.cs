@@ -184,13 +184,15 @@ namespace AutoEquip
 
                     if (statValue < 1) // flipped for calc + *-1
                     {
-                        statValue *= -1;
-                        statValue += 1;
+                        statValue = 1/statValue;
+                        statValue -= 1;
                         statStrength *= -1;
                         //          sumStatsValue += valueDisplay;
                     }
-                    //      if (value != 1)
+
                     score += statValue * statStrength;
+                    
+                    //      if (value != 1)
 
 
                     float statscore = statValue * statStrength;

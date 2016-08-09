@@ -28,7 +28,7 @@ namespace AutoEquip
         public int _lastStatUpdate;
         private int _lastTempUpdate;
         public bool targetTemperaturesOverride;
-  
+
 
         private float _temperatureWeight;
 
@@ -50,8 +50,8 @@ namespace AutoEquip
                 var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
                 if (pawnSave.targetTemperaturesOverride)
                 {
-                           targetTemperaturesOverride = pawnSave.targetTemperaturesOverride;
-                           _targetTemperatures = pawnSave.TargetTemperatures;
+                    targetTemperaturesOverride = pawnSave.targetTemperaturesOverride;
+                    _targetTemperatures = pawnSave.TargetTemperatures;
                 }
 
                 //   if (!optimized)
@@ -74,9 +74,9 @@ namespace AutoEquip
                 _targetTemperatures = value;
                 targetTemperaturesOverride = true;
 
-                   var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
-                   pawnSave.TargetTemperatures = value;
-                   pawnSave.targetTemperaturesOverride = true;
+                var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
+                pawnSave.TargetTemperatures = value;
+                pawnSave.targetTemperaturesOverride = true;
             }
 
         }
@@ -229,12 +229,16 @@ namespace AutoEquip
 
                     if (statValue < 1)
                     {
-                        statValue *= -1;
-                        statValue += 1;
+                        statValue = 1 / statValue;
+                        statValue -= 1;
                         statStrength *= -1;
+                        //  statValue *= -1;
+                        //  statStrength *= -1;
                     }
 
-                    score += statValue * statStrength;
+                        score += statValue * statStrength;
+
+
 
 
 
@@ -446,15 +450,15 @@ namespace AutoEquip
 
 
 
-                //  if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
-                //  {
-                //      _targetTemperatures.max += 20;
-                //  }
-                //
-                //  if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
-                //  {
-                //      _targetTemperatures.min -= 20;
-                //  }
+                    //  if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
+                    //  {
+                    //      _targetTemperatures.max += 20;
+                    //  }
+                    //
+                    //  if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
+                    //  {
+                    //      _targetTemperatures.min -= 20;
+                    //  }
 
                     var pawnSave = MapComponent_AutoEquip.Get.GetCache(_pawn);
                     pawnSave.targetTemperaturesOverride = false;
