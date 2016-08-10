@@ -12,7 +12,7 @@ namespace Outfitter
     public class ITab_Pawn_GearModded : ITab
     {
         #region Modded 1
-        private bool CanEdit { get { return SelPawnForGear.IsColonistPlayerControlled; } }
+        private bool CanEdit { get { return SelPawn.IsColonistPlayerControlled; } }
 
         #endregion
 
@@ -38,7 +38,7 @@ namespace Outfitter
         {
             get
             {
-                return this.SelPawnForGear.RaceProps.ToolUser || this.SelPawnForGear.inventory.container.Any<Thing>();
+                return this.SelPawn.RaceProps.ToolUser || this.SelPawn.inventory.container.Any<Thing>();
             }
         }
 
@@ -46,24 +46,7 @@ namespace Outfitter
         {
             get
             {
-                return this.SelPawnForGear.IsColonistPlayerControlled;
-            }
-        }
-
-        private Pawn SelPawnForGear
-        {
-            get
-            {
-                if (base.SelPawn != null)
-                {
-                    return base.SelPawn;
-                }
-                Corpse corpse = base.SelThing as Corpse;
-                if (corpse != null)
-                {
-                    return corpse.innerPawn;
-                }
-                throw new InvalidOperationException("Gear tab on non-pawn non-corpse " + base.SelThing);
+                return this.SelPawn.IsColonistPlayerControlled;
             }
         }
 
@@ -76,10 +59,10 @@ namespace Outfitter
         protected override void FillTab()
         {
 
-            ApparelStatCache conf= new ApparelStatCache(SelPawn);
+            ApparelStatCache conf= new ApparelStatCache(base.SelPawn);
             #region Modded
 
-            if (SelPawnForGear.IsColonist)
+            if (SelPawn.IsColonist)
             {
             }
             else
@@ -97,7 +80,7 @@ namespace Outfitter
 
                 // select outfit
 
-                if (Widgets.ButtonText(rectStatus, SelPawn.outfits.CurrentOutfit.label, true, false))
+                if (Widgets.ButtonText(rectStatus, base.SelPawn.outfits.CurrentOutfit.label, true, false))
                 {
                     List<FloatMenuOption> list = new List<FloatMenuOption>();
                     foreach (Outfit current in Current.Game.outfitDatabase.AllOutfits)
@@ -105,7 +88,7 @@ namespace Outfitter
                         Outfit localOut = current;
                         list.Add(new FloatMenuOption(localOut.label, delegate
                         {
-                            SelPawn.outfits.CurrentOutfit = localOut;
+                            base.SelPawn.outfits.CurrentOutfit = localOut;
                         }, MenuOptionPriority.Medium, null, null));
                     }
                     Find.WindowStack.Add(new FloatMenu(list));
@@ -115,7 +98,7 @@ namespace Outfitter
 
                 if (Widgets.ButtonText(rectStatus, "OutfitEdit".Translate(), true, false))
                 {
-                    Find.WindowStack.Add(new Dialog_ManageOutfits(SelPawn.outfits.CurrentOutfit));
+                    Find.WindowStack.Add(new Dialog_ManageOutfits(base.SelPawn.outfits.CurrentOutfit));
                 }
             
             #endregion
@@ -131,32 +114,32 @@ namespace Outfitter
             Rect viewRect = new Rect(0f, 0f, position.width - 16f, this.scrollViewHeight);
             Widgets.BeginScrollView(outRect, ref this.scrollPosition, viewRect);
             float num = 0f;
-            if (this.SelPawnForGear.equipment != null)
+            if (this.SelPawn.equipment != null)
             {
                 Widgets.ListSeparator(ref num, viewRect.width, "Equipment".Translate());
-                foreach (ThingWithComps current in this.SelPawnForGear.equipment.AllEquipment)
+                foreach (ThingWithComps current in this.SelPawn.equipment.AllEquipment)
                 {
-                    this.DrawThingRowModded(ref num, viewRect.width, current, conf);
+                    this.DrawThingRowVanilla(ref num, viewRect.width, current);
                 }
             }
-            if (this.SelPawnForGear.apparel != null)
+            if (this.SelPawn.apparel != null)
             {
                 Widgets.ListSeparator(ref num, viewRect.width, "Apparel".Translate());
-                foreach (Apparel current2 in from ap in this.SelPawnForGear.apparel.WornApparel
+                foreach (Apparel current2 in from ap in this.SelPawn.apparel.WornApparel
                                              orderby ap.def.apparel.bodyPartGroups[0].listOrder descending
                                              select ap)
                 {
                     this.DrawThingRowModded(ref num, viewRect.width, current2, conf);
                 }
             }
-            if (this.SelPawnForGear.inventory != null)
+            if (this.SelPawn.inventory != null)
             {
                 Widgets.ListSeparator(ref num, viewRect.width, "Inventory".Translate());
                 ITab_Pawn_GearModded.workingInvList.Clear();
-                ITab_Pawn_GearModded.workingInvList.AddRange(this.SelPawnForGear.inventory.container);
+                ITab_Pawn_GearModded.workingInvList.AddRange(this.SelPawn.inventory.container);
                 for (int i = 0; i < ITab_Pawn_GearModded.workingInvList.Count; i++)
                 {
-                    this.DrawThingRowModded(ref num, viewRect.width, ITab_Pawn_GearModded.workingInvList[i], conf);
+                    this.DrawThingRowVanilla(ref num, viewRect.width, ITab_Pawn_GearModded.workingInvList[i]);
                 }
             }
             if (Event.current.type == EventType.Layout)
@@ -182,29 +165,29 @@ namespace Outfitter
             Rect viewRect = new Rect(0f, 0f, position.width - 16f, this.scrollViewHeight);
             Widgets.BeginScrollView(outRect, ref this.scrollPosition, viewRect);
             float num = 0f;
-            if (this.SelPawnForGear.equipment != null)
+            if (this.SelPawn.equipment != null)
             {
                 Widgets.ListSeparator(ref num, viewRect.width, "Equipment".Translate());
-                foreach (ThingWithComps current in this.SelPawnForGear.equipment.AllEquipment)
+                foreach (ThingWithComps current in this.SelPawn.equipment.AllEquipment)
                 {
                     this.DrawThingRowVanilla(ref num, viewRect.width, current);
                 }
             }
-            if (this.SelPawnForGear.apparel != null)
+            if (this.SelPawn.apparel != null)
             {
                 Widgets.ListSeparator(ref num, viewRect.width, "Apparel".Translate());
-                foreach (Apparel current2 in from ap in this.SelPawnForGear.apparel.WornApparel
+                foreach (Apparel current2 in from ap in this.SelPawn.apparel.WornApparel
                                              orderby ap.def.apparel.bodyPartGroups[0].listOrder descending
                                              select ap)
                 {
                     this.DrawThingRowVanilla(ref num, viewRect.width, current2);
                 }
             }
-            if (this.SelPawnForGear.inventory != null)
+            if (this.SelPawn.inventory != null)
             {
                 Widgets.ListSeparator(ref num, viewRect.width, "Inventory".Translate());
                 ITab_Pawn_GearModded.workingInvList.Clear();
-                ITab_Pawn_GearModded.workingInvList.AddRange(this.SelPawnForGear.inventory.container);
+                ITab_Pawn_GearModded.workingInvList.AddRange(this.SelPawn.inventory.container);
                 for (int i = 0; i < ITab_Pawn_GearModded.workingInvList.Count; i++)
                 {
                     this.DrawThingRowVanilla(ref num, viewRect.width, ITab_Pawn_GearModded.workingInvList[i]);
@@ -274,7 +257,7 @@ namespace Outfitter
                 //Middle Mouse Button Menu
                 if (Event.current.button == 2)
                 {
-                    Find.WindowStack.Add(new DialogPawnApparelDetail(SelPawn, (Apparel)thing));
+                    Find.WindowStack.Add(new DialogPawnApparelDetail(base.SelPawn, (Apparel)thing));
                 }
 
                 // RMB menu
@@ -298,28 +281,28 @@ namespace Outfitter
                         if (eq != null && eq.TryGetComp<CompEquippable>() != null)
                         {
                             /*
-                            CompInventory compInventory = SelPawnForGear.TryGetComp<CompInventory>();
+                            CompInventory compInventory = SelPawn.TryGetComp<CompInventory>();
                             if (compInventory != null)
                             {
                                 FloatMenuOption equipOption;
                                 string eqLabel = GenLabel.ThingLabel(eq.def, eq.Stuff, 1);
-                                if (SelPawnForGear.equipment.AllEquipment.Contains(eq) && SelPawnForGear.inventory != null)
+                                if (SelPawn.equipment.AllEquipment.Contains(eq) && SelPawn.inventory != null)
                                 {
                                     equipOption = new FloatMenuOption("CR_PutAway".Translate(eqLabel),
                                         delegate
                                         {
                                             ThingWithComps oldEq;
-                                            SelPawnForGear.equipment.TryTransferEquipmentToContainer(SelPawnForGear.equipment.Primary, SelPawnForGear.inventory.container, out oldEq);
+                                            SelPawn.equipment.TryTransferEquipmentToContainer(SelPawn.equipment.Primary, SelPawn.inventory.container, out oldEq);
                                         });
                                 }
-                                else if (!SelPawnForGear.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+                                else if (!SelPawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
                                 {
                                     equipOption = new FloatMenuOption("CannotEquip".Translate(eqLabel), null);
                                 }
                                 else
                                 {
                                     string equipOptionLabel = "Equip".Translate(eqLabel);
-                                    if (eq.def.IsRangedWeapon && SelPawnForGear.story != null && SelPawnForGear.story.traits.HasTrait(TraitDefOf.Brawler))
+                                    if (eq.def.IsRangedWeapon && SelPawn.story != null && SelPawn.story.traits.HasTrait(TraitDefOf.Brawler))
                                     {
                                         equipOptionLabel = equipOptionLabel + " " + "EquipWarningBrawler".Translate();
                                     }
@@ -341,15 +324,15 @@ namespace Outfitter
                             Apparel unused;
                             action = delegate
                             {
-                                SelPawnForGear.apparel.TryDrop(ap, out unused, SelPawnForGear.Position, true);
+                                SelPawn.apparel.TryDrop(ap, out unused, SelPawn.Position, true);
                             };
                         }
-                        else if (eq != null && SelPawnForGear.equipment.AllEquipment.Contains(eq))
+                        else if (eq != null && SelPawn.equipment.AllEquipment.Contains(eq))
                         {
                             ThingWithComps unused;
                             action = delegate
                             {
-                                SelPawnForGear.equipment.TryDropEquipment(eq, out unused, SelPawnForGear.Position, true);
+                                SelPawn.equipment.TryDropEquipment(eq, out unused, SelPawn.Position, true);
                             };
                         }
                         else if (!thing.def.destroyOnDrop)
@@ -357,19 +340,19 @@ namespace Outfitter
                             Thing unused;
                             action = delegate
                             {
-                                SelPawnForGear.inventory.container.TryDrop(thing, SelPawnForGear.Position, ThingPlaceMode.Near, out unused);
+                                SelPawn.inventory.container.TryDrop(thing, SelPawn.Position, ThingPlaceMode.Near, out unused);
                             };
                         }
                         floatOptionList.Add(new FloatMenuOption("DropThing".Translate(), action, MenuOptionPriority.Medium, null, null));
                     }
 
-                    if ((SelPawnForGear != null) &&
+                    if ((SelPawn != null) &&
                         (thing is Apparel))
                     {
 
                         floatOptionList.Add(new FloatMenuOption("Outfitter Details", delegate
                         {
-                            Find.WindowStack.Add(new DialogPawnApparelDetail(SelPawn, (Apparel)thing));
+                            Find.WindowStack.Add(new DialogPawnApparelDetail(base.SelPawn, (Apparel)thing));
                         }, MenuOptionPriority.Medium, null, null));
 
                         floatOptionList.Add(new FloatMenuOption("Outfitter Comparer", delegate
@@ -395,9 +378,9 @@ namespace Outfitter
             Rect rect3 = new Rect(ThingLeftX, y, width - ThingLeftX - 58f, ThingRowHeight);
             #region Modded
             string text = thing.LabelCap;
-            string text_Score = Math.Round(conf.ApparelScoreRaw(ap, SelPawn), 2).ToString("N2");
+            string text_Score = Math.Round(conf.ApparelScoreRaw(ap, base.SelPawn), 2).ToString("N2");
             #endregion
-            if (thing is Apparel && this.SelPawnForGear.outfits != null && this.SelPawnForGear.outfits.forcedHandler.IsForced((Apparel)thing))
+            if (thing is Apparel && base.SelPawn.outfits != null && base.SelPawn.outfits.forcedHandler.IsForced((Apparel)thing))
             {
                 text = text + ", " + "ApparelForcedLower".Translate();
             }
@@ -440,7 +423,7 @@ namespace Outfitter
             GUI.color = ITab_Pawn_GearModded.ThingLabelColor;
             Rect rect3 = new Rect(ThingLeftX, y, width - ThingLeftX, 28f);
             string text = thing.LabelCap;
-            if (thing is Apparel && this.SelPawnForGear.outfits != null && this.SelPawnForGear.outfits.forcedHandler.IsForced((Apparel)thing))
+            if (thing is Apparel && this.SelPawn.outfits != null && this.SelPawn.outfits.forcedHandler.IsForced((Apparel)thing))
             {
                 text = text + ", " + "ApparelForcedLower".Translate();
             }
@@ -454,7 +437,7 @@ namespace Outfitter
             Apparel apparel = t as Apparel;
             if (apparel != null)
             {
-                Pawn selPawnForGear = this.SelPawnForGear;
+                Pawn selPawnForGear = this.SelPawn;
                 if (selPawnForGear.drafter.CanTakeOrderedJob())
                 {
                     Job job = new Job(JobDefOf.RemoveApparel, apparel);
@@ -462,15 +445,15 @@ namespace Outfitter
                     selPawnForGear.drafter.TakeOrderedJob(job);
                 }
             }
-            else if (thingWithComps != null && this.SelPawnForGear.equipment.AllEquipment.Contains(thingWithComps))
+            else if (thingWithComps != null && this.SelPawn.equipment.AllEquipment.Contains(thingWithComps))
             {
                 ThingWithComps thingWithComps2;
-                this.SelPawnForGear.equipment.TryDropEquipment(thingWithComps, out thingWithComps2, this.SelPawnForGear.Position, true);
+                this.SelPawn.equipment.TryDropEquipment(thingWithComps, out thingWithComps2, this.SelPawn.Position, true);
             }
             else if (!t.def.destroyOnDrop)
             {
                 Thing thing;
-                this.SelPawnForGear.inventory.container.TryDrop(t, this.SelPawnForGear.Position, ThingPlaceMode.Near, out thing, null);
+                this.SelPawn.inventory.container.TryDrop(t, this.SelPawn.Position, ThingPlaceMode.Near, out thing, null);
             }
         }
     }
