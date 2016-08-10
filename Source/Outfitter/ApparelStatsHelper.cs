@@ -42,18 +42,6 @@ namespace Outfitter
             return PawnApparelStatCaches[pawn];
         }
 
-        public static float GetInfusedStatValue(Apparel apparel, StatDef stat)
-        {
-            float statValue = apparel.GetStatValue(stat, true);
-            float num = statValue + apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat);
-            bool flag = statValue != 0f;
-            if (flag)
-            {
-                num /= statValue;
-            }
-            return num;
-        }
-
         public static Dictionary<StatDef, float> GetWeightedApparelStats(this Pawn pawn)
         {
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
@@ -124,6 +112,40 @@ namespace Outfitter
                     }
                 }
             }
+
+            switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("Nerves")))
+            {
+                case -1:
+                    dict.Add(StatDefOf.MentalBreakThreshold, -0.5f);
+                    break;
+                case -2:
+                    dict.Add(StatDefOf.MentalBreakThreshold, -1f);
+                    break;
+            }
+
+            switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("Neurotic")))
+            {
+                case 1:
+                    if (dict.ContainsKey(StatDefOf.MentalBreakThreshold))
+                    {
+                        dict[StatDefOf.MentalBreakThreshold] += -0.5f;
+                    }
+                    else
+                    {
+                        dict.Add(StatDefOf.MentalBreakThreshold, -0.5f);
+                    }
+                    break;
+                case 2:
+                    if (dict.ContainsKey(StatDefOf.MentalBreakThreshold))
+                    {
+                        dict[StatDefOf.MentalBreakThreshold] += -1f;
+                    }
+                    else
+                    {
+                        dict.Add(StatDefOf.MentalBreakThreshold, -1f);
+                    }
+                    break;
+            }
             // Adds manual prioritiy adjustments 
 
 
@@ -144,10 +166,10 @@ namespace Outfitter
                             priorityAdjust = 0.5f;
                             break;
                         case 3:
-                            priorityAdjust = 0.25f;
+                            priorityAdjust = 0.33f;
                             break;
                         case 4:
-                            priorityAdjust = 0.1f;
+                            priorityAdjust = 0.25f;
                             break;
                         default:
                             priorityAdjust = 0.1f;
@@ -203,6 +225,8 @@ namespace Outfitter
                             break;
                     }
                 }
+
+
             }
 
             // normalize weights
@@ -370,8 +394,8 @@ namespace Outfitter
                     yield break;
                 case "Hunting":
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MoveSpeed"), 0.2f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("AimingDelayFactor"), -0.5f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ShootingAccuracy"), 0.5f);
+                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("AimingDelayFactor"), -1f);
+                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ShootingAccuracy"), 1f);
                     //   yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("AimingAccuracy"), 1f); // CR
                     //   yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ReloadSpeed"), 0.25f); // CR
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 0.25f);
@@ -389,8 +413,8 @@ namespace Outfitter
                 case "Handling":
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MoveSpeed"), 0.2f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("CarryingCapacity"), 0.5f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("TameAnimalChance"), 2f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("TrainAnimalChance"), 2f);
+                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("TameAnimalChance"), 1f);
+                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("TrainAnimalChance"), 1f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MeleeDPS"), 0.2f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MeleeHitChance"), 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 0.25f);
@@ -400,21 +424,27 @@ namespace Outfitter
                     yield break;
                 case "Warden":
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SocialImpact"), 0.5f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("RecruitPrisonerChance"), 2f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("GiftImpact"), 0.1f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("TradePriceImprovement"), 0.8f);
+                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("RecruitPrisonerChance"), 1f);
+                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("GiftImpact"), 0.2f);
+                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("TradePriceImprovement"), 0.2f);
                     yield break;
                 case "Flicker":
                     yield break;
-                case "Patient":
+                case "PatientEmergency":
+                    yield break;
+                case "PatientBedRest":
                     yield break;
                 case "Firefighter":
                     yield break;
                 case "Doctor":
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MedicalOperationSpeed"), 1f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SurgerySuccessChance"), 1.5f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("BaseHealingQuality"), 2f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("HealingSpeed"), 1f);
+                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SurgerySuccessChance"), 1f);
+                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("BaseHealingQuality"), 1f);
+                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("HealingSpeed"), 0.5f);
+                    yield break;
+                case "Managing":
+                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SocialImpact"), 0.25f);
+                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ManagingSpeed"), 0.5f);
                     yield break;
                 default:
                     if (!IgnoredWorktypeDefs.Contains(worktype.defName))
