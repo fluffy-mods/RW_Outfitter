@@ -159,9 +159,16 @@ namespace Outfitter
             }
         }
 
-        //  private int _lastStatUpdate;
-        //  private int _lastTempUpdate;
-        //  private Pawn _pawn;
+        public delegate void ApparelScoreRawStatsHandler(Pawn pawn, Apparel apparel, StatDef statDef, ref float num);
+
+        public static event ApparelScoreRawStatsHandler ApparelScoreRaw_PawnStatsHandlers;
+
+        public static void DoApparelScoreRaw_PawnStatsHandlers(Pawn pawn, Apparel apparel, StatDef statDef, ref float num)
+        {
+            if (ApparelScoreRaw_PawnStatsHandlers != null)
+                ApparelScoreRaw_PawnStatsHandlers(pawn, apparel, statDef, ref num);
+        }
+
 
 
         public ApparelStatCache(Pawn pawn)
@@ -184,6 +191,7 @@ namespace Outfitter
                     equippedOffsets.Add(equippedStatOffset.stat);
                 }
             }
+
             HashSet<StatDef> statBases = new HashSet<StatDef>();
             if (apparel.def.statBases != null)
             {
@@ -193,21 +201,35 @@ namespace Outfitter
                 }
             }
 
+            bool infused = false;
+            HashSet<StatDef> infusedBases = new HashSet<StatDef>();
+            InfusionSet infusions;
+            InfusionDef prefix = null;
+            InfusionDef suffix = null;
+            StatMod mod;
+            if (apparel.TryGetInfusions(out infusions))
+            {
+                prefix = infusions.Prefix;
+                suffix = infusions.Suffix;
+                infused = true;
+
+                foreach (StatPriority infusedBase in pawn.GetApparelStatCache().StatCache)
+                {
+                    if (!infusions.PassPre && prefix.GetStatValue(infusedBase.Stat, out mod))
+                    {
+                        infusedBases.Add(infusedBase.Stat);
+                    }
+
+                }
+            }
+
+
             // start score at 1
             float score = 1;
 
             // make infusions ready
-            InfusionSet infusions;
-            bool infused = false;
-            StatMod mod = null;
-            InfusionDef prefix = null;
-            InfusionDef suffix = null;
-            if (apparel.TryGetInfusions(out infusions))
-            {
-                infused = true;
-                prefix = infusions.Prefix;
-                suffix = infusions.Suffix;
-            }
+            mod = null;
+
 
             // add values for each statdef modified by the apparel
 
@@ -261,7 +283,7 @@ namespace Outfitter
                 }
 
                 // infusions
-                if (infused)
+                if (infusedBases.Contains(statPriority.Stat))
                 {
                     // prefix
                     if (!infusions.PassPre && prefix.GetStatValue(statPriority.Stat, out mod))
