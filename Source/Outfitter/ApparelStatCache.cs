@@ -201,66 +201,54 @@ namespace Outfitter
                 }
             }
 
-            bool infused = false;
-            HashSet<StatDef> infusedBases = new HashSet<StatDef>();
-            InfusionSet infusions;
-            InfusionDef prefix = null;
-            InfusionDef suffix = null;
-            StatMod mod;
-            if (apparel.TryGetInfusions(out infusions))
+            HashSet<StatDef> infusedOffsets = new HashSet<StatDef>();
+            InfusionSet infusionSet;
+
+            if (apparel.TryGetInfusions(out infusionSet))
             {
-                prefix = infusions.Prefix;
-                suffix = infusions.Suffix;
-                infused = true;
+                var prefix = infusionSet.Prefix;
+                var suffix = infusionSet.Suffix;
 
-                foreach (StatPriority infusedBase in pawn.GetApparelStatCache().StatCache)
+                foreach (StatPriority infusedBase in _pawn.GetApparelStatCache().StatCache)
                 {
-                    if (!infusions.PassPre && prefix.GetStatValue(infusedBase.Stat, out mod))
+                    StatMod statMod;
+                    if (!infusionSet.PassPre && prefix.GetStatValue(infusedBase.Stat, out statMod))
                     {
-                        infusedBases.Add(infusedBase.Stat);
+                        infusedOffsets.Add(infusedBase.Stat);
                     }
-
+                    if (!infusionSet.PassSuf && suffix.GetStatValue(infusedBase.Stat, out statMod))
+                    {
+                        infusedOffsets.Add(infusedBase.Stat);
+                    }
                 }
             }
-
 
             // start score at 1
             float score = 1;
 
-            // make infusions ready
-            mod = null;
-
-
             // add values for each statdef modified by the apparel
 
             foreach (StatPriority statPriority in pawn.GetApparelStatCache().StatCache)
-            //foreach (ApparelStatCache.StatPriority statPriority in pawn.GetCache().StatCache)
             {
+                bool baseInfused = false;
+                bool equippedInfused = false;     
+                
                 // statbases, e.g. armor
                 if (statBases.Contains(statPriority.Stat))
                 {
-                    // add stat to base score before offsets are handled ( the pawn's apparel stat cache always has armors first as it is initialized with it).
-                    score += apparel.GetStatValue(statPriority.Stat) * statPriority.Weight;
+                    float statValue = apparel.GetStatValue(statPriority.Stat);
+                    statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref baseInfused);// add stat to base score before offsets are handled ( the pawn's apparel stat cache always has armors first as it is initialized with it).
+
+                    score += statValue * statPriority.Weight;
                 }
 
                 // equipped offsets, e.g. movement speeds
                 if (equippedOffsets.Contains(statPriority.Stat))
                 {
+                    float statValue = GetEquippedStatValue(apparel, statPriority.Stat) - 1;
+                    statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref equippedInfused);
 
-                    float statValue = DialogPawnApparelDetail.GetEquippedStatValue(apparel, statPriority.Stat);
-
-                    var statStrength = statPriority.Weight;
-
-                    if (statValue < 1)
-                    {
-                        statValue = 1 / statValue;
-                        statValue -= 1;
-                        statStrength *= -1;
-                        //  statValue *= -1;
-                        //  statStrength *= -1;
-                    }
-
-                    score += statValue * statStrength;
+                    score += statValue * statPriority.Weight;
 
                     // base value
                     float norm = apparel.GetStatValue(statPriority.Stat);
@@ -283,29 +271,20 @@ namespace Outfitter
                 }
 
                 // infusions
-                if (infusedBases.Contains(statPriority.Stat))
+                if (infusedOffsets.Contains(statPriority.Stat) && !baseInfused && !equippedInfused)
                 {
-                    // prefix
-                    if (!infusions.PassPre && prefix.GetStatValue(statPriority.Stat, out mod))
-                    {
-                        score += mod.offset * statPriority.Weight;
-                        score += score * (mod.multiplier - 1) * statPriority.Weight;
+                    bool dontcare = false;
+                    float statInfused = StatInfused(infusionSet, statPriority, ref dontcare);
 
-            //            Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score );
-                    }
-                    if (infusions.PassSuf || !suffix.GetStatValue(statPriority.Stat, out mod))
-                    {
-                    }
-                    else
-                    {
-                        score += mod.offset * statPriority.Weight;
-                        score += score * (mod.multiplier - 1) * statPriority.Weight;
-                    }
-
-            //        Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score);
+                    score += statInfused * statPriority.Weight;
                 }
+                //        Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score);
+            
             }
+            score += ApparelScoreRaw_Temperature(apparel, pawn) / 10f;
+
             score += 0.125f * ApparelScoreRaw_ProtectionBaseStat(apparel);
+          
             // offset for apparel hitpoints 
             if (apparel.def.useHitPoints)
             {
@@ -313,10 +292,55 @@ namespace Outfitter
                 score *= ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
             }
 
-            score += ApparelScoreRaw_Temperature(apparel, pawn, infused, infusions, mod, prefix, suffix) / 10f;
 
             return score;
         }
+
+        public static float GetEquippedStatValue(Apparel apparel, StatDef stat)
+        {
+
+            float baseStat = apparel.GetStatValue(stat, true);
+            float currentStat = baseStat + apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat);
+            //            currentStat += apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat.StatDef);
+
+            //   if (stat.StatDef.defName.Equals("PsychicSensitivity"))
+            //   {
+            //       return apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat.StatDef) - baseStat;
+            //   }
+
+            if (baseStat != 0)
+            {
+                currentStat = currentStat / baseStat;
+            }
+
+            return currentStat;
+        }
+
+        public static float StatInfused(InfusionSet infusionSet, ApparelStatCache.StatPriority statPriority, ref bool infused)
+        {
+            StatMod statMod;
+            float statInfusedPrefix = 0f;
+            float statInfusedSuffix = 0f;
+
+            var prefix = infusionSet.Prefix;
+            if (!infusionSet.PassPre && prefix.GetStatValue(statPriority.Stat, out statMod))
+            {
+                statInfusedPrefix += statMod.offset;
+                statInfusedPrefix += statMod.multiplier - 1;
+            }
+
+            var suffix = infusionSet.Suffix;
+            if (!infusionSet.PassSuf && suffix.GetStatValue(statPriority.Stat, out statMod))
+            {
+                statInfusedSuffix += statMod.offset;
+                statInfusedSuffix += statMod.multiplier - 1;
+            }
+            if (statInfusedPrefix + statInfusedSuffix != 0f)
+                infused = true;
+            return statInfusedPrefix + statInfusedSuffix;
+        }
+
+
         /*
         public float ApparelScoreRaw_InsulationColdAdjust(Apparel ap)
         {
@@ -341,10 +365,9 @@ namespace Outfitter
             }
         }
 */
-        public float ApparelScoreRaw_Temperature(Apparel apparel, Pawn pawn, bool infused = false, InfusionSet infusions = null, StatMod mod = null, InfusionDef prefix = null, InfusionDef suffix = null)
+        public float ApparelScoreRaw_Temperature(Apparel apparel, Pawn pawn)
         {
             // temperature
-            SaveablePawn newPawnSaveable = MapComponent_Outfitter.Get.GetCache(pawn);
 
             FloatRange targetTemperatures = pawn.GetApparelStatCache().TargetTemperatures;
 
@@ -374,30 +397,34 @@ namespace Outfitter
             float insulationHeat = apparel.GetStatValue(StatDefOf.Insulation_Heat);
 
             // offsets on apparel infusions
-            if (infused)
+            InfusionSet infusionSet;
+            if (apparel.TryGetInfusions(out infusionSet))
             {
+                    StatMod statMod;
+                var prefix = infusionSet.Prefix;
+                var suffix = infusionSet.Suffix;
                 // prefix
-                if (!infusions.PassPre &&
-                     prefix.GetStatValue(StatDefOf.ComfyTemperatureMin, out mod))
+                if (!infusionSet.PassPre &&
+                     prefix.GetStatValue(StatDefOf.ComfyTemperatureMin, out statMod))
                 {
-                    insulationCold += mod.offset;
+                    insulationCold += statMod.offset;
                 }
-                if (!infusions.PassPre &&
-                     prefix.GetStatValue(StatDefOf.ComfyTemperatureMax, out mod))
+                if (!infusionSet.PassPre &&
+                     prefix.GetStatValue(StatDefOf.ComfyTemperatureMax, out statMod))
                 {
-                    insulationHeat += mod.offset;
+                    insulationHeat += statMod.offset;
                 }
 
                 // suffix
-                if (!infusions.PassSuf &&
-                     suffix.GetStatValue(StatDefOf.ComfyTemperatureMin, out mod))
+                if (!infusionSet.PassSuf &&
+                     suffix.GetStatValue(StatDefOf.ComfyTemperatureMin, out statMod))
                 {
-                    insulationCold += mod.offset;
+                    insulationCold += statMod.offset;
                 }
-                if (!infusions.PassSuf &&
-                     suffix.GetStatValue(StatDefOf.ComfyTemperatureMax, out mod))
+                if (!infusionSet.PassSuf &&
+                     suffix.GetStatValue(StatDefOf.ComfyTemperatureMax, out statMod))
                 {
-                    insulationHeat += mod.offset;
+                    insulationHeat += statMod.offset;
                 }
             }
 
@@ -602,6 +629,5 @@ namespace Outfitter
                 pawnSave.Stats.RemoveAll(i => i.Stat == Stat);
             }
         }
-
     }
 }

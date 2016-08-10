@@ -109,28 +109,23 @@ namespace Outfitter
                 }
             }
 
-            HashSet<StatDef> infusedPre = new HashSet<StatDef>();
-            HashSet<StatDef> infusedSuf = new HashSet<StatDef>();
+            HashSet<StatDef> infusedOffsets = new HashSet<StatDef>();
             InfusionSet infusionSet;
-            InfusionDef prefix = null;
-            InfusionDef suffix = null;
-            StatMod statModPrefix = null;
-            StatMod statModSuffix = null;
-            bool infused;
             if (_apparel.TryGetInfusions(out infusionSet))
             {
-                prefix = infusionSet.Prefix;
-                suffix = infusionSet.Suffix;
+                var prefix = infusionSet.Prefix;
+                var suffix = infusionSet.Suffix;
 
                 foreach (ApparelStatCache.StatPriority infusedBase in _pawn.GetApparelStatCache().StatCache)
                 {
-                    if (!infusionSet.PassPre && prefix.GetStatValue(infusedBase.Stat, out statModPrefix))
+                    StatMod statMod;
+                    if (!infusionSet.PassPre && prefix.GetStatValue(infusedBase.Stat, out statMod))
                     {
-                        infusedPre.Add(infusedBase.Stat);
+                        infusedOffsets.Add(infusedBase.Stat);
                     }
-                    if (!infusionSet.PassSuf && suffix.GetStatValue(infusedBase.Stat, out statModSuffix))
+                    if (!infusionSet.PassSuf && suffix.GetStatValue(infusedBase.Stat, out statMod))
                     {
-                        infusedSuf.Add(infusedBase.Stat);
+                        infusedOffsets.Add(infusedBase.Stat);
                     }
                 }
             }
@@ -159,14 +154,20 @@ namespace Outfitter
             // add values for each statdef modified by the apparel
 
 
-            foreach (ApparelStatCache.StatPriority statPriority in _pawn.GetApparelStatCache().StatCache.OrderBy(i=>i.Stat.LabelCap))
+            foreach (ApparelStatCache.StatPriority statPriority in _pawn.GetApparelStatCache().StatCache.OrderBy(i => i.Stat.LabelCap))
             {
                 string statLabel = statPriority.Stat.LabelCap;
-                
+                bool baseInfused = false;
+                bool equippedInfused = false;
                 // statbases, e.g. armor
                 if (statBases.Contains(statPriority.Stat))
                 {
-                    float statscore = _apparel.GetStatValue(statPriority.Stat) * statPriority.Weight;
+                    float statValue = _apparel.GetStatValue(statPriority.Stat);
+
+                    statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref baseInfused);
+
+                    float statScore = statValue*statPriority.Weight;
+                    score += statScore;
 
                     itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
                     if (Mouse.IsOver(itemRect))
@@ -177,27 +178,26 @@ namespace Outfitter
 
                     DrawLine(ref itemRect,
                         statLabel, labelWidth,
-                        _apparel.GetStatValue(statPriority.Stat).ToString("N2"), baseValue,
+                        statValue.ToString("N2"), baseValue,
                         statPriority.Weight.ToString("N2"), multiplierWidth,
-                        statscore.ToString("N2"), finalValue);
+                        statScore.ToString("N2"), finalValue);
 
                     listRect.yMin = itemRect.yMax;
-                    score += statscore;
                 }
 
                 if (equippedOffsets.Contains(statPriority.Stat))
                 {
+                    float statValue = ApparelStatCache.GetEquippedStatValue(_apparel, statPriority.Stat) - 1;
 
-                    float statValue = GetEquippedStatValue(_apparel, statPriority.Stat)-1;
+                    statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref equippedInfused);
 
                     float statscore = statValue * statPriority.Weight;
-
                     score += statscore;
 
                     itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
+
                     if (Mouse.IsOver(itemRect))
                     {
-                        GUI.color = Color.cyan;
                         GUI.DrawTexture(itemRect, TexUI.HighlightTex);
                         GUI.color = Color.white;
                     }
@@ -211,21 +211,12 @@ namespace Outfitter
                     listRect.yMin = itemRect.yMax;
                 }
 
-                if (infusedPre.Contains(statPriority.Stat))
+                if (infusedOffsets.Contains(statPriority.Stat) && !baseInfused && !equippedInfused)
                 {
-                    GUI.color = Color.red;
-                    float statInfused = 0f;
-                    float statScore = 0f;
+                    bool dontcare = false;
+                    float statInfused = ApparelStatCache.StatInfused(infusionSet, statPriority, ref dontcare);
 
-                    prefix = infusionSet.Prefix;
-                    if (!infusionSet.PassPre && prefix.GetStatValue(statPriority.Stat, out statModPrefix))
-                    {
-                        prefix.GetStatValue(statPriority.Stat, out statModPrefix);
-                        statInfused += statModPrefix.offset;
-                        statInfused += statModPrefix.multiplier-1;
-                        statScore = statInfused * statPriority.Weight;
-                    }
-
+                    float statScore = statInfused * statPriority.Weight;
 
                     itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
                     if (Mouse.IsOver(itemRect))
@@ -241,94 +232,18 @@ namespace Outfitter
                         statScore.ToString("N2"), finalValue);
 
                     listRect.yMin = itemRect.yMax;
-                    score += statInfused;
+                    score += statScore;
                 }
-                if (infusedSuf.Contains(statPriority.Stat))
-                {
-                    GUI.color = Color.green;
-                    float statInfused = 0f;
-                    float statScore = 0f;
 
-                    suffix = infusionSet.Suffix;
-                    if (!infusionSet.PassSuf && suffix.GetStatValue(statPriority.Stat, out statModSuffix))
-                    {
-                        suffix.GetStatValue(statPriority.Stat, out statModSuffix);
-                        statInfused += statModSuffix.offset;
-                        statInfused += statModSuffix.multiplier-1;
-                        statScore = statInfused*statPriority.Weight;
-                    }
-
-
-                    itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
-                    if (Mouse.IsOver(itemRect))
-                    {
-                        GUI.DrawTexture(itemRect, TexUI.HighlightTex);
-                        GUI.color = Color.white;
-                    }
-
-                    DrawLine(ref itemRect,
-                        statLabel, labelWidth,
-                        statInfused.ToString("N2"), baseValue,
-                        statPriority.Weight.ToString("N2"), multiplierWidth,
-                        statScore.ToString("N2"), finalValue);
-
-                    listRect.yMin = itemRect.yMax;
-                    score += statInfused;
-                }
                 GUI.color = Color.white;
 
-                // infusions
-                //   if (infusedBases.Contains(statPriority.Stat))
-                //   {
-                //       float subscore = 1f;
-                //
-                //       // prefix
-                //       if (!infusionSet.PassPre && prefix.GetStatValue(statPriority.Stat, out statMod))
-                //       {
-                //           subscore += statMod.offset * statPriority.Weight;
-                //           subscore += subscore * (statMod.multiplier - 1) * statPriority.Weight;
-                //
-                //           //            Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score );
-                //       }
-                //       if (infusionSet.PassSuf || !suffix.GetStatValue(statPriority.Stat, out statMod))
-                //       {
-                //       }
-                //       else
-                //       {
-                //           subscore += statMod.offset * statPriority.Weight;
-                //           subscore += subscore * (statMod.multiplier - 1) * statPriority.Weight;
-                //       }
-                //
-                //
-                //           itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
-                //           if (Mouse.IsOver(itemRect))
-                //           {
-                //               GUI.color = Color.yellow;
-                //               GUI.DrawTexture(itemRect, TexUI.HighlightTex);
-                //               GUI.color = Color.white;
-                //           }
-                //           DrawLine(ref itemRect,
-                //           statPriority.Stat.label, labelWidth,
-                //           subscore.ToString("N2"), baseValue,
-                //           score.ToString("N2"), multiplierWidth,
-                //           statPriority.Weight.ToString("N2"), finalValue);
-                //
-                //           listRect.yMin = itemRect.yMax;
-                //       
-                //       //   score += subscore;
-                //
-                //       //        Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score);
-                //   }
             }
 
-            // EXPERIMENTAL
 
             Widgets.EndScrollView();
             GUI.EndGroup();
 
             Widgets.DrawLineHorizontal(groupRect.xMin, groupRect.yMax, groupRect.width);
-
-            //          itemRect.yMax += 5; 
 
             itemRect = new Rect(listRect.xMin, groupRect.yMax, listRect.width, Text.LineHeight * 0.6f);
             DrawLine(ref itemRect,
@@ -340,8 +255,8 @@ namespace Outfitter
             itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
             DrawLine(ref itemRect,
                 "", labelWidth,
-                "", baseValue,
-                "Multiplier", multiplierWidth,
+                "Modifier", baseValue,
+                "", multiplierWidth,
                 "Subtotal", finalValue);
 
             //       itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 0.6f);
@@ -352,15 +267,16 @@ namespace Outfitter
             DrawLine(ref itemRect,
                 "BasicStatusOfApparel".Translate(), labelWidth,
                 "1.00", baseValue,
-                "", multiplierWidth,
+                "+", multiplierWidth,
                 score.ToString("N2"), finalValue);
 
             score += conf.ApparelScoreRaw_Temperature(_apparel, _pawn) / 10f;
+
             itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
             DrawLine(ref itemRect,
                 "OutfitterTemperature".Translate(), labelWidth,
                 (conf.ApparelScoreRaw_Temperature(_apparel, _pawn) / 10f).ToString("N2"), baseValue,
-                "", multiplierWidth,
+                "+", multiplierWidth,
                 score.ToString("N2"), finalValue);
 
 
@@ -373,20 +289,20 @@ namespace Outfitter
             DrawLine(ref itemRect,
                 "OutfitterArmor".Translate(), labelWidth,
                 armor.ToString("N2"), baseValue,
-                "", multiplierWidth,
+                "+", multiplierWidth,
                 score.ToString("N2"), finalValue);
 
             if (_apparel.def.useHitPoints)
             {
                 itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
                 // durability on 0-1 scale
-                float x = _apparel.HitPoints / (float)_apparel.MaxHitPoints;
+                float x = (float)_apparel.HitPoints / (float)_apparel.MaxHitPoints;
                 score *= ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
 
                 DrawLine(ref itemRect,
                 "OutfitterHitPoints".Translate(), labelWidth,
                 x.ToString("N2"), baseValue,
-                "", multiplierWidth,
+                "*", multiplierWidth,
                 score.ToString("N2"), finalValue);
             }
 
@@ -395,31 +311,11 @@ namespace Outfitter
             DrawLine(ref itemRect,
                 "OutfitterTotal".Translate(), labelWidth,
                 "", baseValue,
-                "", multiplierWidth,
+                "=", multiplierWidth,
                 conf.ApparelScoreRaw(_apparel, _pawn).ToString("N2"), finalValue);
 
             GUI.color = Color.white;
             Text.Anchor = TextAnchor.UpperLeft;
-        }
-
-        public static float GetEquippedStatValue(Apparel apparel, StatDef stat)
-        {
-
-            float baseStat = apparel.GetStatValue(stat, true);
-            float currentStat = baseStat + apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat);
-            //            currentStat += apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat.StatDef);
-
-            //   if (stat.StatDef.defName.Equals("PsychicSensitivity"))
-            //   {
-            //       return apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat.StatDef) - baseStat;
-            //   }
-
-            if (baseStat != 0)
-            {
-                currentStat = currentStat / baseStat;
-            }
-
-            return currentStat;
         }
 
         private void DrawLine(ref Rect itemRect,
@@ -444,7 +340,5 @@ namespace Outfitter
             Widgets.Label(new Rect(itemRect.xMin, itemRect.yMin, finalValueWidth, itemRect.height), finalValueText);
             itemRect.xMin += finalValueWidth;
         }
-
-
     }
 }
