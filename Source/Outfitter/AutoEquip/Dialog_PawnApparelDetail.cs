@@ -109,29 +109,29 @@ namespace Outfitter
                 }
             }
 
-            bool infused = false;
-            HashSet<StatDef> infusedBases = new HashSet<StatDef>();
+            HashSet<StatDef> infusedPre = new HashSet<StatDef>();
+            HashSet<StatDef> infusedSuf = new HashSet<StatDef>();
             InfusionSet infusionSet;
             InfusionDef prefix = null;
             InfusionDef suffix = null;
-            StatMod statMod = null;
+            StatMod statModPrefix = null;
+            StatMod statModSuffix = null;
+            bool infused;
             if (_apparel.TryGetInfusions(out infusionSet))
             {
                 prefix = infusionSet.Prefix;
                 suffix = infusionSet.Suffix;
-                infused = true;
 
                 foreach (ApparelStatCache.StatPriority infusedBase in _pawn.GetApparelStatCache().StatCache)
                 {
-                    if (!infusionSet.PassPre && prefix.GetStatValue(infusedBase.Stat, out statMod))
+                    if (!infusionSet.PassPre && prefix.GetStatValue(infusedBase.Stat, out statModPrefix))
                     {
-                        infusedBases.Add(infusedBase.Stat);
+                        infusedPre.Add(infusedBase.Stat);
                     }
-                    if (infusionSet.PassSuf || !suffix.GetStatValue(infusedBase.Stat, out statMod))
+                    if (!infusionSet.PassSuf && suffix.GetStatValue(infusedBase.Stat, out statModSuffix))
                     {
-                        break;
+                        infusedSuf.Add(infusedBase.Stat);
                     }
-                    infusedBases.Add(infusedBase.Stat);
                 }
             }
 
@@ -161,27 +161,17 @@ namespace Outfitter
 
             foreach (ApparelStatCache.StatPriority statPriority in _pawn.GetApparelStatCache().StatCache)
             {
-                // make infusions ready
-                if (_apparel.TryGetInfusions(out infusionSet))
-                {
-                    infused = true;
-                    prefix = infusionSet.Prefix;
-                    suffix = infusionSet.Suffix;
-                }
-
-
                 // statbases, e.g. armor
                 if (statBases.Contains(statPriority.Stat))
                 {
+                    float statscore = _apparel.GetStatValue(statPriority.Stat) * statPriority.Weight;
+
                     itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
                     if (Mouse.IsOver(itemRect))
                     {
                         GUI.DrawTexture(itemRect, TexUI.HighlightTex);
                         GUI.color = Color.white;
                     }
-
-                    float statscore = _apparel.GetStatValue(statPriority.Stat) * statPriority.Weight;
-
 
                     DrawLine(ref itemRect,
                         statPriority.Stat.label, labelWidth,
@@ -191,7 +181,6 @@ namespace Outfitter
 
                     listRect.yMin = itemRect.yMax;
                     score += statscore;
-
                 }
 
                 if (equippedOffsets.Contains(statPriority.Stat))
@@ -232,48 +221,108 @@ namespace Outfitter
 
                     listRect.yMin = itemRect.yMax;
                 }
-                // infusions
-                if (infusedBases.Contains(statPriority.Stat))
+
+                if (infusedPre.Contains(statPriority.Stat))
                 {
-                    float subscore = 1f;
-
-                    // prefix
-                    if (!infusionSet.PassPre && prefix.GetStatValue(statPriority.Stat, out statMod))
+                    float statscore = 1f;
+                    prefix = infusionSet.Prefix;
+                    if (!infusionSet.PassPre && prefix.GetStatValue(statPriority.Stat, out statModPrefix))
                     {
-                        subscore += statMod.offset * statPriority.Weight;
-                        subscore += subscore * (statMod.multiplier - 1) * statPriority.Weight;
-
-                        //            Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score );
-                    }
-                    if (infusionSet.PassSuf || !suffix.GetStatValue(statPriority.Stat, out statMod))
-                    {
-                    }
-                    else
-                    {
-                        subscore += statMod.offset * statPriority.Weight;
-                        subscore += subscore * (statMod.multiplier - 1) * statPriority.Weight;
+                        GUI.color = Color.red;
+                        prefix.GetStatValue(statPriority.Stat, out statModPrefix);
+                        statscore += statModPrefix.offset * statPriority.Weight;
+                        statscore *= statModPrefix.multiplier * statPriority.Weight;
                     }
 
+                    itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
+                    if (Mouse.IsOver(itemRect))
+                    {
+                        GUI.DrawTexture(itemRect, TexUI.HighlightTex);
+                        GUI.color = Color.white;
+                    }
 
-                        itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
-                        if (Mouse.IsOver(itemRect))
-                        {
-                            GUI.color = Color.yellow;
-                            GUI.DrawTexture(itemRect, TexUI.HighlightTex);
-                            GUI.color = Color.white;
-                        }
-                        DrawLine(ref itemRect,
+                    DrawLine(ref itemRect,
                         statPriority.Stat.label, labelWidth,
-                        subscore.ToString("N2"), baseValue,
-                        score.ToString("N2"), multiplierWidth,
-                        statPriority.Weight.ToString("N2"), finalValue);
+                        _apparel.GetStatValue(statPriority.Stat).ToString("N2"), baseValue,
+                        statPriority.Weight.ToString("N2"), multiplierWidth,
+                        statscore.ToString("N2"), finalValue);
 
-                        listRect.yMin = itemRect.yMax;
-                    
-                    //   score += subscore;
-
-                    //        Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score);
+                    listRect.yMin = itemRect.yMax;
+                    score += statscore;
                 }
+                if (infusedSuf.Contains(statPriority.Stat))
+                {
+                    float statscore = 1f;
+                    suffix = infusionSet.Suffix;
+                    if (!infusionSet.PassSuf && suffix.GetStatValue(statPriority.Stat, out statModSuffix))
+                    {
+                        suffix.GetStatValue(statPriority.Stat, out statModSuffix);
+                        GUI.color = Color.green;
+                        statscore += statModSuffix.offset * statPriority.Weight;
+                        statscore *= statModSuffix.multiplier * statPriority.Weight;
+                    }
+
+
+                    itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
+                    if (Mouse.IsOver(itemRect))
+                    {
+                        GUI.DrawTexture(itemRect, TexUI.HighlightTex);
+                        GUI.color = Color.white;
+                    }
+
+                    DrawLine(ref itemRect,
+                        statPriority.Stat.label, labelWidth,
+                        _apparel.GetStatValue(statPriority.Stat).ToString("N2"), baseValue,
+                        statPriority.Weight.ToString("N2"), multiplierWidth,
+                        statscore.ToString("N2"), finalValue);
+
+                    listRect.yMin = itemRect.yMax;
+                    score += statscore;
+                }
+                GUI.color = Color.white;
+
+                // infusions
+                //   if (infusedBases.Contains(statPriority.Stat))
+                //   {
+                //       float subscore = 1f;
+                //
+                //       // prefix
+                //       if (!infusionSet.PassPre && prefix.GetStatValue(statPriority.Stat, out statMod))
+                //       {
+                //           subscore += statMod.offset * statPriority.Weight;
+                //           subscore += subscore * (statMod.multiplier - 1) * statPriority.Weight;
+                //
+                //           //            Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score );
+                //       }
+                //       if (infusionSet.PassSuf || !suffix.GetStatValue(statPriority.Stat, out statMod))
+                //       {
+                //       }
+                //       else
+                //       {
+                //           subscore += statMod.offset * statPriority.Weight;
+                //           subscore += subscore * (statMod.multiplier - 1) * statPriority.Weight;
+                //       }
+                //
+                //
+                //           itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
+                //           if (Mouse.IsOver(itemRect))
+                //           {
+                //               GUI.color = Color.yellow;
+                //               GUI.DrawTexture(itemRect, TexUI.HighlightTex);
+                //               GUI.color = Color.white;
+                //           }
+                //           DrawLine(ref itemRect,
+                //           statPriority.Stat.label, labelWidth,
+                //           subscore.ToString("N2"), baseValue,
+                //           score.ToString("N2"), multiplierWidth,
+                //           statPriority.Weight.ToString("N2"), finalValue);
+                //
+                //           listRect.yMin = itemRect.yMax;
+                //       
+                //       //   score += subscore;
+                //
+                //       //        Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score);
+                //   }
             }
 
             // EXPERIMENTAL
