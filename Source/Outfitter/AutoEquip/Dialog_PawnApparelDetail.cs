@@ -159,8 +159,10 @@ namespace Outfitter
             // add values for each statdef modified by the apparel
 
 
-            foreach (ApparelStatCache.StatPriority statPriority in _pawn.GetApparelStatCache().StatCache)
+            foreach (ApparelStatCache.StatPriority statPriority in _pawn.GetApparelStatCache().StatCache.OrderBy(i=>i.Stat.LabelCap))
             {
+                string statLabel = statPriority.Stat.LabelCap;
+                
                 // statbases, e.g. armor
                 if (statBases.Contains(statPriority.Stat))
                 {
@@ -174,7 +176,7 @@ namespace Outfitter
                     }
 
                     DrawLine(ref itemRect,
-                        statPriority.Stat.label, labelWidth,
+                        statLabel, labelWidth,
                         _apparel.GetStatValue(statPriority.Stat).ToString("N2"), baseValue,
                         statPriority.Weight.ToString("N2"), multiplierWidth,
                         statscore.ToString("N2"), finalValue);
@@ -186,25 +188,11 @@ namespace Outfitter
                 if (equippedOffsets.Contains(statPriority.Stat))
                 {
 
+                    float statValue = GetEquippedStatValue(_apparel, statPriority.Stat)-1;
 
-                    float statValue = GetEquippedStatValue(_apparel, statPriority.Stat);
-                    var statStrength = statPriority.Weight;
+                    float statscore = statValue * statPriority.Weight;
 
-
-                    if (statValue < 1) // flipped for calc + *-1
-                    {
-                        statValue = 1 / statValue;
-                        statValue -= 1;
-                        statStrength *= -1;
-                        //          sumStatsValue += valueDisplay;
-                    }
-
-                    score += statValue * statStrength;
-
-                    //      if (value != 1)
-
-
-                    float statscore = statValue * statStrength;
+                    score += statscore;
 
                     itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
                     if (Mouse.IsOver(itemRect))
@@ -215,8 +203,8 @@ namespace Outfitter
                     }
 
                     DrawLine(ref itemRect,
-                        statPriority.Stat.label, labelWidth,
-                        GetEquippedStatValue(_apparel, statPriority.Stat).ToString("N2"), baseValue,
+                        statLabel, labelWidth,
+                        statValue.ToString("N2"), baseValue,
                         statPriority.Weight.ToString("N2"), multiplierWidth,
                         statscore.ToString("N2"), finalValue);
 
@@ -227,15 +215,15 @@ namespace Outfitter
                 {
                     GUI.color = Color.red;
                     float statInfused = 0f;
-                    float statScore = 1f;
+                    float statScore = 0f;
 
                     prefix = infusionSet.Prefix;
                     if (!infusionSet.PassPre && prefix.GetStatValue(statPriority.Stat, out statModPrefix))
                     {
                         prefix.GetStatValue(statPriority.Stat, out statModPrefix);
                         statInfused += statModPrefix.offset;
-                        statInfused += statModPrefix.multiplier;
-                        statScore = (statInfused - 1) * statPriority.Weight;
+                        statInfused += statModPrefix.multiplier-1;
+                        statScore = statInfused * statPriority.Weight;
                     }
 
 
@@ -247,7 +235,7 @@ namespace Outfitter
                     }
 
                     DrawLine(ref itemRect,
-                        statPriority.Stat.label, labelWidth,
+                        statLabel, labelWidth,
                         statInfused.ToString("N2"), baseValue,
                         statPriority.Weight.ToString("N2"), multiplierWidth,
                         statScore.ToString("N2"), finalValue);
@@ -259,15 +247,15 @@ namespace Outfitter
                 {
                     GUI.color = Color.green;
                     float statInfused = 0f;
-                    float statScore = 1f;
+                    float statScore = 0f;
 
                     suffix = infusionSet.Suffix;
                     if (!infusionSet.PassSuf && suffix.GetStatValue(statPriority.Stat, out statModSuffix))
                     {
                         suffix.GetStatValue(statPriority.Stat, out statModSuffix);
                         statInfused += statModSuffix.offset;
-                        statInfused += statModSuffix.multiplier;
-                        statScore = (statInfused-1)*statPriority.Weight;
+                        statInfused += statModSuffix.multiplier-1;
+                        statScore = statInfused*statPriority.Weight;
                     }
 
 
@@ -279,7 +267,7 @@ namespace Outfitter
                     }
 
                     DrawLine(ref itemRect,
-                        statPriority.Stat.label, labelWidth,
+                        statLabel, labelWidth,
                         statInfused.ToString("N2"), baseValue,
                         statPriority.Weight.ToString("N2"), multiplierWidth,
                         statScore.ToString("N2"), finalValue);
