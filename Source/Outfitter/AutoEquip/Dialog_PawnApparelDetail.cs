@@ -185,13 +185,6 @@ namespace Outfitter
 
                 if (equippedOffsets.Contains(statPriority.Stat))
                 {
-                    itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
-                    if (Mouse.IsOver(itemRect))
-                    {
-                        GUI.color = Color.cyan;
-                        GUI.DrawTexture(itemRect, TexUI.HighlightTex);
-                        GUI.color = Color.white;
-                    }
 
 
                     float statValue = GetEquippedStatValue(_apparel, statPriority.Stat);
@@ -213,6 +206,14 @@ namespace Outfitter
 
                     float statscore = statValue * statStrength;
 
+                    itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
+                    if (Mouse.IsOver(itemRect))
+                    {
+                        GUI.color = Color.cyan;
+                        GUI.DrawTexture(itemRect, TexUI.HighlightTex);
+                        GUI.color = Color.white;
+                    }
+
                     DrawLine(ref itemRect,
                         statPriority.Stat.label, labelWidth,
                         GetEquippedStatValue(_apparel, statPriority.Stat).ToString("N2"), baseValue,
@@ -224,15 +225,19 @@ namespace Outfitter
 
                 if (infusedPre.Contains(statPriority.Stat))
                 {
-                    float statscore = 1f;
+                    GUI.color = Color.red;
+                    float statInfused = 0f;
+                    float statScore = 1f;
+
                     prefix = infusionSet.Prefix;
                     if (!infusionSet.PassPre && prefix.GetStatValue(statPriority.Stat, out statModPrefix))
                     {
-                        GUI.color = Color.red;
                         prefix.GetStatValue(statPriority.Stat, out statModPrefix);
-                        statscore += statModPrefix.offset * statPriority.Weight;
-                        statscore *= statModPrefix.multiplier * statPriority.Weight;
+                        statInfused += statModPrefix.offset;
+                        statInfused += statModPrefix.multiplier;
+                        statScore = (statInfused - 1) * statPriority.Weight;
                     }
+
 
                     itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, Text.LineHeight * 1.2f);
                     if (Mouse.IsOver(itemRect))
@@ -243,23 +248,26 @@ namespace Outfitter
 
                     DrawLine(ref itemRect,
                         statPriority.Stat.label, labelWidth,
-                        _apparel.GetStatValue(statPriority.Stat).ToString("N2"), baseValue,
+                        statInfused.ToString("N2"), baseValue,
                         statPriority.Weight.ToString("N2"), multiplierWidth,
-                        statscore.ToString("N2"), finalValue);
+                        statScore.ToString("N2"), finalValue);
 
                     listRect.yMin = itemRect.yMax;
-                    score += statscore;
+                    score += statInfused;
                 }
                 if (infusedSuf.Contains(statPriority.Stat))
                 {
-                    float statscore = 1f;
+                    GUI.color = Color.green;
+                    float statInfused = 0f;
+                    float statScore = 1f;
+
                     suffix = infusionSet.Suffix;
                     if (!infusionSet.PassSuf && suffix.GetStatValue(statPriority.Stat, out statModSuffix))
                     {
                         suffix.GetStatValue(statPriority.Stat, out statModSuffix);
-                        GUI.color = Color.green;
-                        statscore += statModSuffix.offset * statPriority.Weight;
-                        statscore *= statModSuffix.multiplier * statPriority.Weight;
+                        statInfused += statModSuffix.offset;
+                        statInfused += statModSuffix.multiplier;
+                        statScore = (statInfused-1)*statPriority.Weight;
                     }
 
 
@@ -272,12 +280,12 @@ namespace Outfitter
 
                     DrawLine(ref itemRect,
                         statPriority.Stat.label, labelWidth,
-                        _apparel.GetStatValue(statPriority.Stat).ToString("N2"), baseValue,
+                        statInfused.ToString("N2"), baseValue,
                         statPriority.Weight.ToString("N2"), multiplierWidth,
-                        statscore.ToString("N2"), finalValue);
+                        statScore.ToString("N2"), finalValue);
 
                     listRect.yMin = itemRect.yMax;
-                    score += statscore;
+                    score += statInfused;
                 }
                 GUI.color = Color.white;
 
