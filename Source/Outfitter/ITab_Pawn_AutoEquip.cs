@@ -14,16 +14,55 @@ namespace Outfitter
 
         public ITab_Pawn_Outfitter()
         {
-            size = new Vector2(432f, 600f);
+            size = new Vector2(432f, 500f);
             labelKey = "OutfitterTab";
         }
 
+        Window_Pawn_GearScore _windowGearScore = new Window_Pawn_GearScore();
+
         protected override void FillTab()
         {
+            // Outfit + Status button
+            Rect rectStatus = new Rect(10f, 15f, 100f, 30f);
+
+            // select outfit
+
+            if (Widgets.ButtonText(rectStatus, SelPawn.outfits.CurrentOutfit.label, true, false))
+            {
+                List<FloatMenuOption> list = new List<FloatMenuOption>();
+                foreach (Outfit current in Current.Game.outfitDatabase.AllOutfits)
+                {
+                    Outfit localOut = current;
+                    list.Add(new FloatMenuOption(localOut.label, delegate
+                    {
+                        SelPawn.outfits.CurrentOutfit = localOut;
+                    }));
+                }
+                Find.WindowStack.Add(new FloatMenu(list));
+            }
+
+            //edit outfit
+            rectStatus = new Rect(rectStatus.xMax + 10f, rectStatus.y, rectStatus.width, rectStatus.height);
+
+            if (Widgets.ButtonText(rectStatus, "OutfitEdit".Translate(), true, false))
+            {
+                Find.WindowStack.Add(new Dialog_ManageOutfits(SelPawn.outfits.CurrentOutfit));
+            }
+
+            //show outfit
+            rectStatus = new Rect(rectStatus.xMax + 10f, rectStatus.y, rectStatus.width, rectStatus.height);
+
+            if (Widgets.ButtonText(rectStatus, "OutfitShow".Translate(), true, false))
+            {
+                Find.WindowStack.Add(_windowGearScore);
+            }
+
             // main canvas
             Rect canvas = new Rect(0f, 0f, size.x, size.y).ContractedBy(20f);
             GUI.BeginGroup(canvas);
             Vector2 cur = Vector2.zero;
+
+            cur.y += 30f;
 
             // header
             Rect tempHeaderRect = new Rect(cur.x, cur.y, canvas.width, 30f);
@@ -62,11 +101,11 @@ namespace Outfitter
 
             if (pawnStatCache.targetTemperaturesOverride)
             {
-                if (Widgets.ButtonImage(tempResetRect, LocalTextures.resetButton))
+                if (Widgets.ButtonImage(tempResetRect, OutfitterTextures.resetButton))
                 {
                     pawnStatCache.targetTemperaturesOverride = false;
-               //   var saveablePawn = MapComponent_Outfitter.Get.GetCache(SelPawn);
-               //     saveablePawn.targetTemperaturesOverride = false;
+                    //   var saveablePawn = MapComponent_Outfitter.Get.GetCache(SelPawn);
+                    //     saveablePawn.targetTemperaturesOverride = false;
                     pawnStatCache.UpdateTemperatureIfNecessary(true);
                 }
                 TooltipHandler.TipRegion(tempResetRect, "TemperatureRangeReset".Translate());
@@ -83,14 +122,14 @@ namespace Outfitter
 
             // add button
             Rect addStatRect = new Rect(statsHeaderRect.xMax - 16f, statsHeaderRect.yMin + 10f, 16f, 16f);
-            if (Widgets.ButtonImage(addStatRect, LocalTextures.addButton))
+            if (Widgets.ButtonImage(addStatRect, OutfitterTextures.addButton))
             {
                 List<FloatMenuOption> options = new List<FloatMenuOption>();
                 foreach (StatDef def in SelPawn.NotYetAssignedStatDefs().OrderBy(i => i.label.ToString()))
                 {
                     options.Add(new FloatMenuOption(def.LabelCap, delegate
                   {
-                      SelPawn.GetApparelStatCache().StatCache.Insert(0, new ApparelStatCache.StatPriority(def, 0f, StatAssignment.Manual));                      
+                      SelPawn.GetApparelStatCache().StatCache.Insert(0, new ApparelStatCache.StatPriority(def, 0f, StatAssignment.Manual));
                       //pawnStatCache.Stats.Insert(0, new Saveable_Pawn_StatDef(def, 0f, StatAssignment.Manual));
                   }));
                 }

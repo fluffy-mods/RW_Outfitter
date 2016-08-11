@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Verse
 {
@@ -11,11 +10,5 @@ namespace Verse
         public static readonly Texture2D Drop = ContentFinder<Texture2D>.Get("UI/Buttons/Drop", true);
 
         public static readonly Texture2D FloatRangeSliderTex = ContentFinder<Texture2D>.Get("UI/Widgets/RangeSlider", true);
-
-        public static Texture2D resetButton = ContentFinder<Texture2D>.Get("reset");
-
-        public static Texture2D deleteButton = ContentFinder<Texture2D>.Get("delete");
-
-        public static Texture2D addButton = ContentFinder<Texture2D>.Get("add");
     }
 }

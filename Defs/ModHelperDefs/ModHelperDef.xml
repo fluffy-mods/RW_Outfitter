@@ -9,7 +9,6 @@
     </PostLoadInjectors>
     <SpecialInjectors>
       <li>Outfitter.InjectTab</li>
-      <li>Outfitter.ITabInjector</li>
     </SpecialInjectors>
     <MapComponents>
       <li>Outfitter.MapComponent_Outfitter</li>
