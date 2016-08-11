@@ -290,7 +290,7 @@ namespace Outfitter
             if (apparel.def.useHitPoints)
             {
                 float x = apparel.HitPoints / (float)apparel.MaxHitPoints;
-                score *= ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
+                score = score * 0.5f + score * 0.5f * ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
             }
 
 
