@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using CommunityCoreLibrary;
 using RimWorld;
 using Verse;
@@ -63,12 +62,12 @@ namespace Outfitter
             if (index != -1)
             {
                 itabs.Remove(typeof(ITab_Pawn_Gear));
-                itabs.Insert(index, typeof(ITab_Pawn_GearModded));
+                itabs.Insert(index, typeof(Window_Pawn_GearScore));
             }
 
             // replace resolved ITab, if needed.
             var oldGearTab = ITabManager.GetSharedInstance(typeof(ITab_Pawn_Gear));
-            var newGearTab = ITabManager.GetSharedInstance(typeof(ITab_Pawn_GearModded));
+            var newGearTab = ITabManager.GetSharedInstance(typeof(Window_Pawn_GearScore));
             if (!itabsResolved.NullOrEmpty() && itabsResolved.Contains(oldGearTab))
             {
                 int resolvedIndex = itabsResolved.IndexOf(oldGearTab);

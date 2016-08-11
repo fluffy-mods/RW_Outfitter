@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Infused;
 using RimWorld;
 using Verse;
 
@@ -311,17 +310,8 @@ namespace Outfitter
                         }
                     }
 
-                    // add all stat modifiers from all infusions
-                    foreach (InfusionDef infusion in DefDatabase<InfusionDef>.AllDefsListForReading)
-                    {
-                        foreach (KeyValuePair<StatDef, StatMod> mod in infusion.stats)
-                        {
-                            if (!_allApparelStats.Contains(mod.Key))
-                            {
-                                _allApparelStats.Add(mod.Key);
-                            }
-                        }
-                    }
+                    ApparelStatCache.FillIgnoredInfused_PawnStatsHandlers(ref _allApparelStats);
+
                 }
                 return _allApparelStats;
             }

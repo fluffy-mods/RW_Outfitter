@@ -1,18 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Infused;
 using RimWorld;
 using UnityEngine;
 using Verse;
 
 namespace Outfitter
 {
-    public class DialogPawnApparelDetail : Window
+    public class Window_PawnApparelDetail : Window
     {
         private readonly Pawn _pawn;
         private readonly Apparel _apparel;
 
-        public DialogPawnApparelDetail(Pawn pawn, Apparel apparel)
+        public Window_PawnApparelDetail(Pawn pawn, Apparel apparel)
         {
             doCloseX = true;
             closeOnEscapeKey = true;
@@ -20,6 +19,17 @@ namespace Outfitter
 
             _pawn = pawn;
             _apparel = apparel;
+        }
+
+        private Pawn SelPawn => Find.Selector.SingleSelectedThing as Pawn;
+
+
+        public override void WindowUpdate()
+        {
+            if (SelPawn == null)
+            {
+                Close(false);
+            }
         }
 
         public override Vector2 InitialSize
@@ -42,20 +52,20 @@ namespace Outfitter
         {
             get
             {
-                if (this._apparel != null)
-                    return (Def)this._apparel.def;
-                return this.def;
+                if (_apparel != null)
+                    return _apparel.def;
+                return def;
             }
         }
 
         private string GetTitle()
         {
-            if (this._apparel != null)
-                return this._apparel.LabelCap;
-            ThingDef thingDef = this.Def as ThingDef;
+            if (_apparel != null)
+                return _apparel.LabelCap;
+            ThingDef thingDef = Def as ThingDef;
             if (thingDef != null)
-                return GenLabel.ThingLabel((BuildableDef)thingDef, this.stuff, 1).CapitalizeFirst();
-            return this.Def.LabelCap;
+                return GenLabel.ThingLabel(thingDef, stuff, 1).CapitalizeFirst();
+            return Def.LabelCap;
         }
 
         public override void DoWindowContents(Rect windowRect)
@@ -65,7 +75,7 @@ namespace Outfitter
             Rect rect1 = new Rect(windowRect);
             rect1.height = 34f;
             Text.Font = GameFont.Medium;
-            Widgets.Label(rect1, this.GetTitle());
+            Widgets.Label(rect1, GetTitle());
             Text.Font = GameFont.Small;
 
             Rect groupRect = windowRect;
@@ -109,26 +119,9 @@ namespace Outfitter
                 }
             }
 
-            HashSet<StatDef> infusedOffsets = new HashSet<StatDef>();
-            InfusionSet infusionSet;
-            if (_apparel.TryGetInfusions(out infusionSet))
-            {
-                var prefix = infusionSet.Prefix;
-                var suffix = infusionSet.Suffix;
-
-                foreach (ApparelStatCache.StatPriority infusedBase in _pawn.GetApparelStatCache().StatCache)
-                {
-                    StatMod statMod;
-                    if (!infusionSet.PassPre && prefix.GetStatValue(infusedBase.Stat, out statMod))
-                    {
-                        infusedOffsets.Add(infusedBase.Stat);
-                    }
-                    if (!infusionSet.PassSuf && suffix.GetStatValue(infusedBase.Stat, out statMod))
-                    {
-                        infusedOffsets.Add(infusedBase.Stat);
-                    }
-                }
-            }
+            ApparelStatCache.infusedOffsets = new HashSet<StatDef>();
+            foreach (ApparelStatCache.StatPriority statPriority in _pawn.GetApparelStatCache().StatCache)
+                ApparelStatCache.FillInfusionHashset_PawnStatsHandlers(_pawn, _apparel, statPriority.Stat);
 
 
 
@@ -157,14 +150,16 @@ namespace Outfitter
             foreach (ApparelStatCache.StatPriority statPriority in _pawn.GetApparelStatCache().StatCache.OrderBy(i => i.Stat.LabelCap))
             {
                 string statLabel = statPriority.Stat.LabelCap;
-                bool baseInfused = false;
-                bool equippedInfused = false;
                 // statbases, e.g. armor
+
+           //     ApparelStatCache.DoApparelScoreRaw_PawnStatsHandlers(_pawn, _apparel, statPriority.Stat, ref currentStat);
+
+
                 if (statBases.Contains(statPriority.Stat))
                 {
                     float statValue = _apparel.GetStatValue(statPriority.Stat);
 
-                    statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref baseInfused);
+            //        statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref baseInfused);
 
                     float statScore = statValue*statPriority.Weight;
                     score += statScore;
@@ -189,7 +184,7 @@ namespace Outfitter
                 {
                     float statValue = ApparelStatCache.GetEquippedStatValue(_apparel, statPriority.Stat) - 1;
 
-                    statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref equippedInfused);
+                    //       statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref equippedInfused);
 
                     float statscore = statValue * statPriority.Weight;
                     score += statscore;
@@ -211,10 +206,20 @@ namespace Outfitter
                     listRect.yMin = itemRect.yMax;
                 }
 
-                if (infusedOffsets.Contains(statPriority.Stat) && !baseInfused && !equippedInfused)
+                GUI.color = Color.white;
+
+            }
+
+            foreach (ApparelStatCache.StatPriority statPriority in _pawn.GetApparelStatCache().StatCache.OrderBy(i => i.Stat.LabelCap))
+            {
+                GUI.color= Color.yellow;
+                string statLabel = statPriority.Stat.LabelCap;
+
+                if (ApparelStatCache.infusedOffsets.Contains(statPriority.Stat))
                 {
-                    bool dontcare = false;
-                    float statInfused = ApparelStatCache.StatInfused(infusionSet, statPriority, ref dontcare);
+                    //     float statInfused = ApparelStatCache.StatInfused(infusionSet, statPriority, ref dontcare);
+                    float statInfused = 0f;
+                    ApparelStatCache.DoApparelScoreRaw_PawnStatsHandlers(_pawn, _apparel, statPriority.Stat, ref statInfused);
 
                     float statScore = statInfused * statPriority.Weight;
 
@@ -234,11 +239,9 @@ namespace Outfitter
                     listRect.yMin = itemRect.yMax;
                     score += statScore;
                 }
-
                 GUI.color = Color.white;
 
             }
-
 
             Widgets.EndScrollView();
             GUI.EndGroup();
@@ -258,10 +261,6 @@ namespace Outfitter
                 "Modifier", baseValue,
                 "", multiplierWidth,
                 "Subtotal", finalValue);
-
-            //       itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 0.6f);
-            //       Widgets.DrawLineHorizontal(itemRect.xMin, itemRect.yMax, itemRect.width);
-
 
             itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
             DrawLine(ref itemRect,
@@ -296,7 +295,7 @@ namespace Outfitter
             {
                 itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
                 // durability on 0-1 scale
-                float x = (float)_apparel.HitPoints / (float)_apparel.MaxHitPoints;
+                float x = _apparel.HitPoints / (float)_apparel.MaxHitPoints;
                 score *= ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
 
                 DrawLine(ref itemRect,

@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Infused;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -159,9 +158,16 @@ namespace Outfitter
             }
         }
 
+        public static HashSet<StatDef> infusedOffsets;
+
+
         public delegate void ApparelScoreRawStatsHandler(Pawn pawn, Apparel apparel, StatDef statDef, ref float num);
+        public delegate void ApparelScoreRawInfusionHandlers(Pawn pawn, Apparel apparel, StatDef statDef);
+        public delegate void ApparelScoreRawIgnored_WTHandlers(ref List<StatDef> statDef);
 
         public static event ApparelScoreRawStatsHandler ApparelScoreRaw_PawnStatsHandlers;
+        public static event ApparelScoreRawInfusionHandlers ApparelScoreRaw_InfusionHandlers;
+        public static event ApparelScoreRawIgnored_WTHandlers Ignored_WTHandlers;
 
         public static void DoApparelScoreRaw_PawnStatsHandlers(Pawn pawn, Apparel apparel, StatDef statDef, ref float num)
         {
@@ -169,7 +175,17 @@ namespace Outfitter
                 ApparelScoreRaw_PawnStatsHandlers(pawn, apparel, statDef, ref num);
         }
 
+        public static void FillIgnoredInfused_PawnStatsHandlers(ref List<StatDef> _allApparelStats)
+        {
+            if (Ignored_WTHandlers != null)
+                Ignored_WTHandlers(ref _allApparelStats);
+        }
 
+        public static void FillInfusionHashset_PawnStatsHandlers(Pawn pawn, Apparel apparel, StatDef statDef)
+        {
+            if (ApparelScoreRaw_InfusionHandlers != null)
+                ApparelScoreRaw_InfusionHandlers(pawn, apparel, statDef);
+        }
 
         public ApparelStatCache(Pawn pawn)
         {
@@ -201,27 +217,9 @@ namespace Outfitter
                 }
             }
 
-            HashSet<StatDef> infusedOffsets = new HashSet<StatDef>();
-            InfusionSet infusionSet;
-
-            if (apparel.TryGetInfusions(out infusionSet))
-            {
-                var prefix = infusionSet.Prefix;
-                var suffix = infusionSet.Suffix;
-
-                foreach (StatPriority infusedBase in _pawn.GetApparelStatCache().StatCache)
-                {
-                    StatMod statMod;
-                    if (!infusionSet.PassPre && prefix.GetStatValue(infusedBase.Stat, out statMod))
-                    {
-                        infusedOffsets.Add(infusedBase.Stat);
-                    }
-                    if (!infusionSet.PassSuf && suffix.GetStatValue(infusedBase.Stat, out statMod))
-                    {
-                        infusedOffsets.Add(infusedBase.Stat);
-                    }
-                }
-            }
+            infusedOffsets = new HashSet<StatDef>();
+            foreach (StatPriority statPriority in _pawn.GetApparelStatCache().StatCache)
+                FillInfusionHashset_PawnStatsHandlers(_pawn, apparel, statPriority.Stat);
 
             // start score at 1
             float score = 1;
@@ -230,14 +228,15 @@ namespace Outfitter
 
             foreach (StatPriority statPriority in pawn.GetApparelStatCache().StatCache)
             {
-                bool baseInfused = false;
-                bool equippedInfused = false;     
                 
                 // statbases, e.g. armor
                 if (statBases.Contains(statPriority.Stat))
                 {
                     float statValue = apparel.GetStatValue(statPriority.Stat);
-                    statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref baseInfused);// add stat to base score before offsets are handled ( the pawn's apparel stat cache always has armors first as it is initialized with it).
+            //        statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref baseInfused);
+            //        DoApparelScoreRaw_PawnStatsHandlers(_pawn, apparel, statPriority.Stat, ref statValue);
+
+                    // add stat to base score before offsets are handled ( the pawn's apparel stat cache always has armors first as it is initialized with it).
 
                     score += statValue * statPriority.Weight;
                 }
@@ -246,7 +245,8 @@ namespace Outfitter
                 if (equippedOffsets.Contains(statPriority.Stat))
                 {
                     float statValue = GetEquippedStatValue(apparel, statPriority.Stat) - 1;
-                    statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref equippedInfused);
+                    //  statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref equippedInfused);
+                    //DoApparelScoreRaw_PawnStatsHandlers(_pawn, apparel, statPriority.Stat, ref statValue);
 
                     score += statValue * statPriority.Weight;
 
@@ -271,10 +271,11 @@ namespace Outfitter
                 }
 
                 // infusions
-                if (infusedOffsets.Contains(statPriority.Stat) && !baseInfused && !equippedInfused)
+                if (infusedOffsets.Contains(statPriority.Stat))
                 {
-                    bool dontcare = false;
-                    float statInfused = StatInfused(infusionSet, statPriority, ref dontcare);
+                  //  float statInfused = StatInfused(infusionSet, statPriority, ref dontcare);
+                    float statInfused = 0f;
+                    DoApparelScoreRaw_PawnStatsHandlers(_pawn, apparel, statPriority.Stat, ref statInfused);
 
                     score += statInfused * statPriority.Weight;
                 }
@@ -288,7 +289,7 @@ namespace Outfitter
             // offset for apparel hitpoints 
             if (apparel.def.useHitPoints)
             {
-                float x = (float)apparel.HitPoints / (float)apparel.MaxHitPoints;
+                float x = apparel.HitPoints / (float)apparel.MaxHitPoints;
                 score *= ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
             }
 
@@ -316,29 +317,6 @@ namespace Outfitter
             return currentStat;
         }
 
-        public static float StatInfused(InfusionSet infusionSet, ApparelStatCache.StatPriority statPriority, ref bool infused)
-        {
-            StatMod statMod;
-            float statInfusedPrefix = 0f;
-            float statInfusedSuffix = 0f;
-
-            var prefix = infusionSet.Prefix;
-            if (!infusionSet.PassPre && prefix.GetStatValue(statPriority.Stat, out statMod))
-            {
-                statInfusedPrefix += statMod.offset;
-                statInfusedPrefix += statMod.multiplier - 1;
-            }
-
-            var suffix = infusionSet.Suffix;
-            if (!infusionSet.PassSuf && suffix.GetStatValue(statPriority.Stat, out statMod))
-            {
-                statInfusedSuffix += statMod.offset;
-                statInfusedSuffix += statMod.multiplier - 1;
-            }
-            if (statInfusedPrefix + statInfusedSuffix != 0f)
-                infused = true;
-            return statInfusedPrefix + statInfusedSuffix;
-        }
 
 
         /*
@@ -381,14 +359,14 @@ namespace Outfitter
                 //calculating trait offset because there's no way to get comfytemperaturemin without clothes
                 List<Trait> traitList = (
                     from tr in _pawn.story.traits.allTraits
-                    where tr.CurrentData.statOffsets != null && tr.CurrentData.statOffsets.Any((StatModifier se) => se.stat == StatDefOf.ComfyTemperatureMin)
+                    where tr.CurrentData.statOffsets != null && tr.CurrentData.statOffsets.Any(se => se.stat == StatDefOf.ComfyTemperatureMin)
                     select tr
-                    ).ToList<Trait>();
+                    ).ToList();
 
                 foreach (Trait t in traitList)
                 {
-                    minComfyTemperature += t.CurrentData.statOffsets.First((StatModifier se) => se.stat == StatDefOf.ComfyTemperatureMin).value;
-                    maxComfyTemperature += t.CurrentData.statOffsets.First((StatModifier se) => se.stat == StatDefOf.ComfyTemperatureMax).value;
+                    minComfyTemperature += t.CurrentData.statOffsets.First(se => se.stat == StatDefOf.ComfyTemperatureMin).value;
+                    maxComfyTemperature += t.CurrentData.statOffsets.First(se => se.stat == StatDefOf.ComfyTemperatureMax).value;
                 }
             }
 
@@ -397,36 +375,8 @@ namespace Outfitter
             float insulationHeat = apparel.GetStatValue(StatDefOf.Insulation_Heat);
 
             // offsets on apparel infusions
-            InfusionSet infusionSet;
-            if (apparel.TryGetInfusions(out infusionSet))
-            {
-                    StatMod statMod;
-                var prefix = infusionSet.Prefix;
-                var suffix = infusionSet.Suffix;
-                // prefix
-                if (!infusionSet.PassPre &&
-                     prefix.GetStatValue(StatDefOf.ComfyTemperatureMin, out statMod))
-                {
-                    insulationCold += statMod.offset;
-                }
-                if (!infusionSet.PassPre &&
-                     prefix.GetStatValue(StatDefOf.ComfyTemperatureMax, out statMod))
-                {
-                    insulationHeat += statMod.offset;
-                }
-
-                // suffix
-                if (!infusionSet.PassSuf &&
-                     suffix.GetStatValue(StatDefOf.ComfyTemperatureMin, out statMod))
-                {
-                    insulationCold += statMod.offset;
-                }
-                if (!infusionSet.PassSuf &&
-                     suffix.GetStatValue(StatDefOf.ComfyTemperatureMax, out statMod))
-                {
-                    insulationHeat += statMod.offset;
-                }
-            }
+            DoApparelScoreRaw_PawnStatsHandlers(_pawn,apparel, StatDefOf.ComfyTemperatureMin,ref insulationCold);
+            DoApparelScoreRaw_PawnStatsHandlers(_pawn,apparel, StatDefOf.ComfyTemperatureMax, ref insulationHeat);
 
             // if this gear is currently worn, we need to make sure the contribution to the pawn's comfy temps is removed so the gear is properly scored
             if (pawn.apparel.WornApparel.Contains(apparel))
@@ -543,7 +493,7 @@ namespace Outfitter
             if (stat.Assignment == StatAssignment.Manual)
             {
                 buttonTooltip = "StatPriorityDelete".Translate(stat.Stat.LabelCap);
-                if (Widgets.ButtonImage(buttonRect, LocalTextures.deleteButton))
+                if (Widgets.ButtonImage(buttonRect, OutfitterTextures.deleteButton))
                 {
                     stat.Delete(pawn);
                     stop_ui = true;
@@ -553,7 +503,7 @@ namespace Outfitter
             if (stat.Assignment == StatAssignment.Override)
             {
                 buttonTooltip = "StatPriorityReset".Translate(stat.Stat.LabelCap);
-                if (Widgets.ButtonImage(buttonRect, LocalTextures.resetButton))
+                if (Widgets.ButtonImage(buttonRect, OutfitterTextures.resetButton))
                 {
                     stat.Reset(pawn);
                     stop_ui = true;
