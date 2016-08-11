@@ -50,12 +50,9 @@ namespace Outfitter
             }
         }
 
-        private string labelKey;
-
         public Window_Pawn_GearScore()
         {
             doCloseX = true;
-            labelKey = "TabGear";
             preventCameraMotion = false;
         }
 
