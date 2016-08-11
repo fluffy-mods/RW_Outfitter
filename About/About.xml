@@ -8,5 +8,8 @@
 	 - Defaults to sensible priorities based on work types assigned and map seasonal temperatures.
 	 - Allows you to finetune, add and/or remove priorities.
    - Takes personal traits like temperature preference or mental states into account.
-	 - No naked pawns!</description>
+	 - No naked pawns!
+ 
+Original version of Outfitter by Fluffy. Original version of AutoEquip by soulkata. 
+</description>
 </ModMetaData>
