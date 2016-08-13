@@ -296,12 +296,12 @@ namespace Outfitter
                 itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
                 // durability on 0-1 scale
                 float x = _apparel.HitPoints / (float)_apparel.MaxHitPoints;
-                score = score * 0.5f + score * 0.5f * ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
+                score = score * 0.15f + score * 0.85f * ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
 
                 DrawLine(ref itemRect,
                 "OutfitterHitPoints".Translate(), labelWidth,
                 x.ToString("N2"), baseValue,
-                "*Score/2 + Score/2", multiplierWidth,
+                "weighted", multiplierWidth,
                 score.ToString("N2"), finalValue);
             }
 

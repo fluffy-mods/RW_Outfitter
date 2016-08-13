@@ -160,8 +160,6 @@ namespace Outfitter
 
             if (Widgets.ButtonInvisible(rect))
             {
-
-
                 //Middle Mouse Button Menu
                 if (Event.current.button == 2)
                 {

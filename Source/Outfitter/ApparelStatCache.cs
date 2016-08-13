@@ -193,8 +193,21 @@ namespace Outfitter
             _cache = new List<StatPriority>();
             _lastStatUpdate = -5000;
             _lastTempUpdate = -5000;
+            _neededWarmth = CalculateNeededWarmth(_pawn);
         }
+        
+        public static NeededWarmth CalculateNeededWarmth(Pawn pawn)
+        {
+            float temperature = GenTemperature.OutdoorTemp;
 
+            if (temperature<pawn.ComfortableTemperatureRange().min - 10f)
+                return NeededWarmth.Warm;
+
+            if (temperature > pawn.ComfortableTemperatureRange().max + 10f)
+                return NeededWarmth.Cool;
+
+            return NeededWarmth.Any;
+            }
 
         public float ApparelScoreRaw(Apparel apparel, Pawn pawn)
         {
@@ -228,13 +241,13 @@ namespace Outfitter
 
             foreach (StatPriority statPriority in pawn.GetApparelStatCache().StatCache)
             {
-                
+
                 // statbases, e.g. armor
                 if (statBases.Contains(statPriority.Stat))
                 {
                     float statValue = apparel.GetStatValue(statPriority.Stat);
-            //        statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref baseInfused);
-            //        DoApparelScoreRaw_PawnStatsHandlers(_pawn, apparel, statPriority.Stat, ref statValue);
+                    //        statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref baseInfused);
+                    //        DoApparelScoreRaw_PawnStatsHandlers(_pawn, apparel, statPriority.Stat, ref statValue);
 
                     // add stat to base score before offsets are handled ( the pawn's apparel stat cache always has armors first as it is initialized with it).
 
@@ -273,24 +286,24 @@ namespace Outfitter
                 // infusions
                 if (infusedOffsets.Contains(statPriority.Stat))
                 {
-                  //  float statInfused = StatInfused(infusionSet, statPriority, ref dontcare);
+                    //  float statInfused = StatInfused(infusionSet, statPriority, ref dontcare);
                     float statInfused = 0f;
                     DoApparelScoreRaw_PawnStatsHandlers(_pawn, apparel, statPriority.Stat, ref statInfused);
 
                     score += statInfused * statPriority.Weight;
                 }
                 //        Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score);
-            
+
             }
             score += ApparelScoreRaw_Temperature(apparel, pawn) / 10f;
 
             score += 0.125f * ApparelScoreRaw_ProtectionBaseStat(apparel);
-          
+
             // offset for apparel hitpoints 
             if (apparel.def.useHitPoints)
             {
                 float x = apparel.HitPoints / (float)apparel.MaxHitPoints;
-                score = score * 0.5f + score * 0.5f * ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
+                score = score * 0.15f + score * 0.85f * ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
             }
 
 
@@ -343,24 +356,27 @@ namespace Outfitter
             }
         }
 */
+        private static NeededWarmth _neededWarmth;
+
         public float ApparelScoreRaw_Temperature(Apparel apparel, Pawn pawn)
         {
             // temperature
 
             FloatRange targetTemperatures = pawn.GetApparelStatCache().TargetTemperatures;
 
-
-            float minComfyTemperature = pawn.GetStatValue(StatDefOf.ComfyTemperatureMin);
-            float maxComfyTemperature = pawn.GetStatValue(StatDefOf.ComfyTemperatureMax);
+            float minComfyTemperature = pawn.ComfortableTemperatureRange().min;
+            float maxComfyTemperature = pawn.ComfortableTemperatureRange().max;
+            //float minComfyTemperature = pawn.GetStatValue(StatDefOf.ComfyTemperatureMin);
+            //float maxComfyTemperature = pawn.GetStatValue(StatDefOf.ComfyTemperatureMax);
 
 
             if (_pawn.story.traits.DegreeOfTrait(TraitDef.Named("TemperaturePreference")) != 0)
             {
                 //calculating trait offset because there's no way to get comfytemperaturemin without clothes
                 List<Trait> traitList = (
-                    from tr in _pawn.story.traits.allTraits
-                    where tr.CurrentData.statOffsets != null && tr.CurrentData.statOffsets.Any(se => se.stat == StatDefOf.ComfyTemperatureMin)
-                    select tr
+                    from trait in _pawn.story.traits.allTraits
+                    where trait.CurrentData.statOffsets != null && trait.CurrentData.statOffsets.Any(se => se.stat == StatDefOf.ComfyTemperatureMin || se.stat == StatDefOf.ComfyTemperatureMax)
+                    select trait
                     ).ToList();
 
                 foreach (Trait t in traitList)
@@ -375,8 +391,8 @@ namespace Outfitter
             float insulationHeat = apparel.GetStatValue(StatDefOf.Insulation_Heat);
 
             // offsets on apparel infusions
-            DoApparelScoreRaw_PawnStatsHandlers(_pawn,apparel, StatDefOf.ComfyTemperatureMin,ref insulationCold);
-            DoApparelScoreRaw_PawnStatsHandlers(_pawn,apparel, StatDefOf.ComfyTemperatureMax, ref insulationHeat);
+            DoApparelScoreRaw_PawnStatsHandlers(_pawn, apparel, StatDefOf.ComfyTemperatureMin, ref insulationCold);
+            DoApparelScoreRaw_PawnStatsHandlers(_pawn, apparel, StatDefOf.ComfyTemperatureMax, ref insulationHeat);
 
             // if this gear is currently worn, we need to make sure the contribution to the pawn's comfy temps is removed so the gear is properly scored
             if (pawn.apparel.WornApparel.Contains(apparel))
@@ -388,40 +404,55 @@ namespace Outfitter
             // now for the interesting bit.
             float temperatureScoreOffset = 0f;
             float tempWeight = pawn.GetApparelStatCache().TemperatureWeight;
-            float neededInsulation_Cold = targetTemperatures.TrueMin - minComfyTemperature;
             // isolation_cold is given as negative numbers < 0 means we're underdressed
-            float neededInsulation_Warmth = targetTemperatures.TrueMax - maxComfyTemperature;
+            float neededInsulation_Cold = targetTemperatures.min - minComfyTemperature;
             // isolation_warm is given as positive numbers.
+            float neededInsulation_Warmth = targetTemperatures.max - maxComfyTemperature;
 
-            // currently too cold
-            if (neededInsulation_Cold < 0)
+
+            switch (_neededWarmth)
             {
-                temperatureScoreOffset += -insulationCold * tempWeight;
-            }
-            // currently warm enough
-            else
-            {
-                // this gear would make us too cold
-                if (insulationCold > neededInsulation_Cold)
-                {
-                    temperatureScoreOffset += (neededInsulation_Cold - insulationCold) * tempWeight;
-                }
+                case NeededWarmth.Warm:
+                    {
+                        // currently too cold
+                        if (neededInsulation_Cold < 0)
+                        {
+                            temperatureScoreOffset += -insulationCold * tempWeight;
+                        }
+                        // currently warm enough
+                        else
+                        {
+                            // this gear would make us too cold
+                            if (insulationCold > neededInsulation_Cold)
+                            {
+                                temperatureScoreOffset += (neededInsulation_Cold - insulationCold) * tempWeight;
+                            }
+                        }
+                        break;
+                    }
+                case NeededWarmth.Cool:
+                    {
+                        // currently too warm
+                        if (neededInsulation_Warmth > 0)
+                        {
+                            temperatureScoreOffset += insulationHeat * tempWeight;
+                        }
+                        // currently cool enough
+                        else
+                        {
+                            // this gear would make us too warm
+                            if (insulationHeat < neededInsulation_Warmth)
+                            {
+                                temperatureScoreOffset += -(neededInsulation_Warmth - insulationHeat) * tempWeight;
+                            }
+                        }
+
+                        break;
+                    }
+                default:
+                    return 0f;
             }
 
-            // currently too warm
-            if (neededInsulation_Warmth > 0)
-            {
-                temperatureScoreOffset += insulationHeat * tempWeight;
-            }
-            // currently cool enough
-            else
-            {
-                // this gear would make us too warm
-                if (insulationHeat < neededInsulation_Warmth)
-                {
-                    temperatureScoreOffset += -(neededInsulation_Warmth - insulationHeat) * tempWeight;
-                }
-            }
             return temperatureScoreOffset;
         }
 
