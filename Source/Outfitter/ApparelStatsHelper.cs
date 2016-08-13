@@ -44,196 +44,231 @@ namespace Outfitter
         public static Dictionary<StatDef, float> GetWeightedApparelStats(this Pawn pawn)
         {
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
+            var pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
+
             //       dict.Add(StatDefOf.ArmorRating_Blunt, 0.25f);
             //       dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
 
-            if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ToxicFallout>().Any())
-            {
-                dict.Add(StatDefOf.ImmunityGainSpeed, 1f);
-            }
-
-            if (Find.MapConditionManager.ConditionIsActive(MapConditionDef.Named("PsychicDrone")))
-            {
-                if (Find.MapConditionManager.GetActiveCondition<MapCondition_PsychicEmanation>().gender == pawn.gender)
-                {
-                    switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("PsychicSensitivity")))
-                    {
-                        case -1:
-                            {
-                                dict.Add(StatDefOf.PsychicSensitivity, -0.25f);
-                                break;
-                            }
-                        case 0:
-                            {
-                                dict.Add(StatDefOf.PsychicSensitivity, -0.5f);
-                                break;
-                            }
-                        case 1:
-                            {
-                                dict.Add(StatDefOf.PsychicSensitivity, -0.75f);
-                                break;
-                            }
-                        case 2:
-                            {
-                                dict.Add(StatDefOf.PsychicSensitivity, -1f);
-                                break;
-                            }
-                    }
-                }
-            }
-
-            if (Find.MapConditionManager.ConditionIsActive(MapConditionDef.Named("PsychicSoothe")))
-            {
-                if (Find.MapConditionManager.GetActiveCondition<MapCondition_PsychicEmanation>().gender == pawn.gender)
-                {
-                    switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("PsychicSensitivity")))
-                    {
-                        case -1:
-                            {
-                                dict.Add(StatDefOf.PsychicSensitivity, 1f);
-                                break;
-                            }
-                        case 0:
-                            {
-                                dict.Add(StatDefOf.PsychicSensitivity, 0.75f);
-                                break;
-                            }
-                        case 1:
-                            {
-                                dict.Add(StatDefOf.PsychicSensitivity, 0.5f);
-                                break;
-                            }
-                        case 2:
-                            {
-                                dict.Add(StatDefOf.PsychicSensitivity, 0.25f);
-                                break;
-                            }
-                    }
-                }
-            }
-
-            switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("Nerves")))
-            {
-                case -1:
-                    dict.Add(StatDefOf.MentalBreakThreshold, -0.5f);
-                    break;
-                case -2:
-                    dict.Add(StatDefOf.MentalBreakThreshold, -1f);
-                    break;
-            }
-
-            switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("Neurotic")))
-            {
-                case 1:
-                    if (dict.ContainsKey(StatDefOf.MentalBreakThreshold))
-                    {
-                        dict[StatDefOf.MentalBreakThreshold] += -0.5f;
-                    }
-                    else
-                    {
-                        dict.Add(StatDefOf.MentalBreakThreshold, -0.5f);
-                    }
-                    break;
-                case 2:
-                    if (dict.ContainsKey(StatDefOf.MentalBreakThreshold))
-                    {
-                        dict[StatDefOf.MentalBreakThreshold] += -1f;
-                    }
-                    else
-                    {
-                        dict.Add(StatDefOf.MentalBreakThreshold, -1f);
-                    }
-                    break;
-            }
             // Adds manual prioritiy adjustments 
-
-
-            // add weights for all worktypes, multiplied by job priority
-            foreach (WorkTypeDef workType in DefDatabase<WorkTypeDef>.AllDefsListForReading.Where(def => pawn.workSettings.WorkIsActive(def)))
+            if (pawnSave.AddWorkStats)
             {
-                foreach (KeyValuePair<StatDef, float> stat in GetStatsOfWorkType(workType))
+                // add weights for all worktypes, multiplied by job priority
+                foreach (WorkTypeDef workType in DefDatabase<WorkTypeDef>.AllDefsListForReading.Where(def => pawn.workSettings.WorkIsActive(def)))
                 {
-                    int priority = pawn.workSettings.GetPriority(workType);
-
-                    float priorityAdjust;
-                    switch (priority)
+                    foreach (KeyValuePair<StatDef, float> stat in GetStatsOfWorkType(workType))
                     {
-                        case 1:
-                            priorityAdjust = 1f;
-                            break;
-                        case 2:
-                            priorityAdjust = 0.5f;
-                            break;
-                        case 3:
-                            priorityAdjust = 0.33f;
-                            break;
-                        case 4:
-                            priorityAdjust = 0.25f;
-                            break;
-                        default:
-                            priorityAdjust = 0.1f;
-                            break;
+                        int priority = pawn.workSettings.GetPriority(workType);
+
+                        float priorityAdjust;
+                        switch (priority)
+                        {
+                            case 1:
+                                priorityAdjust = 1f;
+                                break;
+                            case 2:
+                                priorityAdjust = 0.5f;
+                                break;
+                            case 3:
+                                priorityAdjust = 0.33f;
+                                break;
+                            case 4:
+                                priorityAdjust = 0.25f;
+                                break;
+                            default:
+                                priorityAdjust = 0.1f;
+                                break;
+                        }
+
+                        float weight = stat.Value * priorityAdjust;
+
+                        if (dict.ContainsKey(stat.Key))
+                        {
+                            dict[stat.Key] += weight;
+                        }
+                        else
+                        {
+                            dict.Add(stat.Key, weight);
+                        }
+                    }
+                }
+
+                foreach (StatDef key in new List<StatDef>(dict.Keys))
+                {
+                    if (key == StatDef.Named("MoveSpeed"))
+                    {
+                        switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("SpeedOffset")))
+                        {
+                            case -1:
+                                dict[key] *= 1.5f;
+                                break;
+                            case 1:
+                                dict[key] *= 0.5f;
+                                break;
+                            case 2:
+                                dict[key] *= 0.25f;
+                                break;
+                        }
                     }
 
-                    float weight = stat.Value * priorityAdjust;
-
-                    if (dict.ContainsKey(stat.Key))
+                    if (key == StatDef.Named("WorkSpeedGlobal"))
                     {
-                        dict[stat.Key] += weight;
-                    }
-                    else
-                    {
-                        dict.Add(stat.Key, weight);
+                        switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("Industriousness")))
+                        {
+                            case -2:
+                                dict[key] *= 2f;
+                                break;
+                            case -1:
+                                dict[key] *= 1.5f;
+                                break;
+                            case 1:
+                                dict[key] *= 0.5f;
+                                break;
+                            case 2:
+                                dict[key] *= 0.25f;
+                                break;
+                        }
                     }
                 }
             }
 
-            foreach (StatDef key in new List<StatDef>(dict.Keys))
+            if (dict.Count > 0)
             {
-                if (key == StatDef.Named("MoveSpeed"))
+                // normalize weights
+                float max = dict.Values.Select(Math.Abs).Max();
+                foreach (StatDef key in new List<StatDef>(dict.Keys))
                 {
-                    switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("SpeedOffset")))
-                    {
-                        case -1:
-                            dict[key] *= 1.5f;
-                            break;
-                        case 1:
-                            dict[key] *= 0.5f;
-                            break;
-                        case 2:
-                            dict[key] *= 0.25f;
-                            break;
-                    }
+                    // normalize max of absolute weigths to be 0.75
+                    dict[key] /= max / 0.75f;
                 }
-
-                if (key == StatDef.Named("WorkSpeedGlobal"))
-                {
-                    switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("Industriousness")))
-                    {
-                        case -2:
-                            dict[key] *= 2f;
-                            break;
-                        case -1:
-                            dict[key] *= 1.5f;
-                            break;
-                        case 1:
-                            dict[key] *= 0.5f;
-                            break;
-                        case 2:
-                            dict[key] *= 0.25f;
-                            break;
-                    }
-                }
-
-
             }
 
-            // normalize weights
-            float max = dict.Values.Select(Math.Abs).Max();
-            foreach (StatDef key in new List<StatDef>(dict.Keys))
+            return dict;
+        }
+
+        public static Dictionary<StatDef, float> GetWeightedApparelIndividualStats(this Pawn pawn)
+        {
+            Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
+            var pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
+
+            //       dict.Add(StatDefOf.ArmorRating_Blunt, 0.25f);
+            //       dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
+
+            if (pawnSave.AddIndividualStats)
             {
-                // normalize max of absolute weigths to be 0.75
-                dict[key] /= max / 0.75f;
+                #region MapConditions
+                //if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ToxicFallout>().Any())
+                //{
+                //    dict.Add(StatDefOf.ImmunityGainSpeed, 1f);
+                //}
+
+                if (Find.MapConditionManager.ConditionIsActive(MapConditionDef.Named("PsychicDrone")))
+                {
+                    if (Find.MapConditionManager.GetActiveCondition<MapCondition_PsychicEmanation>().gender == pawn.gender)
+                    {
+                        switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("PsychicSensitivity")))
+                        {
+                            case -1:
+                                {
+                                    dict.Add(StatDefOf.PsychicSensitivity, -0.25f);
+                                    break;
+                                }
+                            case 0:
+                                {
+                                    dict.Add(StatDefOf.PsychicSensitivity, -0.5f);
+                                    break;
+                                }
+                            case 1:
+                                {
+                                    dict.Add(StatDefOf.PsychicSensitivity, -0.75f);
+                                    break;
+                                }
+                            case 2:
+                                {
+                                    dict.Add(StatDefOf.PsychicSensitivity, -1f);
+                                    break;
+                                }
+                        }
+                    }
+                }
+
+                if (Find.MapConditionManager.ConditionIsActive(MapConditionDef.Named("PsychicSoothe")))
+                {
+                    if (Find.MapConditionManager.GetActiveCondition<MapCondition_PsychicEmanation>().gender == pawn.gender)
+                    {
+                        switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("PsychicSensitivity")))
+                        {
+                            case -1:
+                                {
+                                    dict.Add(StatDefOf.PsychicSensitivity, 1f);
+                                    break;
+                                }
+                            case 0:
+                                {
+                                    dict.Add(StatDefOf.PsychicSensitivity, 0.75f);
+                                    break;
+                                }
+                            case 1:
+                                {
+                                    dict.Add(StatDefOf.PsychicSensitivity, 0.5f);
+                                    break;
+                                }
+                            case 2:
+                                {
+                                    dict.Add(StatDefOf.PsychicSensitivity, 0.25f);
+                                    break;
+                                }
+                        }
+                    }
+                }
+                #endregion
+
+
+                switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("Nerves")))
+                {
+                    case -1:
+                        dict.Add(StatDefOf.MentalBreakThreshold, -0.5f);
+                        break;
+                    case -2:
+                        dict.Add(StatDefOf.MentalBreakThreshold, -1f);
+                        break;
+                }
+
+                switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("Neurotic")))
+                {
+                    case 1:
+                        if (dict.ContainsKey(StatDefOf.MentalBreakThreshold))
+                        {
+                            dict[StatDefOf.MentalBreakThreshold] += -0.5f;
+                        }
+                        else
+                        {
+                            dict.Add(StatDefOf.MentalBreakThreshold, -0.5f);
+                        }
+                        break;
+                    case 2:
+                        if (dict.ContainsKey(StatDefOf.MentalBreakThreshold))
+                        {
+                            dict[StatDefOf.MentalBreakThreshold] += -1f;
+                        }
+                        else
+                        {
+                            dict.Add(StatDefOf.MentalBreakThreshold, -1f);
+                        }
+                        break;
+                }
+            }
+
+
+
+            if (dict.Count > 0)
+            {
+                // normalize weights
+                float max = dict.Values.Select(Math.Abs).Max();
+                foreach (StatDef key in new List<StatDef>(dict.Keys))
+                {
+                    // normalize max of absolute weigths to be 0.75
+                    dict[key] /= max / 0.75f;
+                }
             }
 
             return dict;

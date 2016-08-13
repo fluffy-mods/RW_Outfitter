@@ -16,8 +16,9 @@ namespace Outfitter
     public enum StatAssignment
     {
         Manual,
-        Automatic,
-        Override
+        Override,
+        Individual,
+        Automatic
     }
 
     public class ApparelStatCache
@@ -48,9 +49,9 @@ namespace Outfitter
             get
             {
                 var pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
-                if (pawnSave.targetTemperaturesOverride)
+                if (pawnSave.TargetTemperaturesOverride)
                 {
-                    targetTemperaturesOverride = pawnSave.targetTemperaturesOverride;
+                    targetTemperaturesOverride = pawnSave.TargetTemperaturesOverride;
                     _targetTemperatures = pawnSave.TargetTemperatures;
                 }
 
@@ -76,7 +77,7 @@ namespace Outfitter
 
                 var pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
                 pawnSave.TargetTemperatures = value;
-                pawnSave.targetTemperaturesOverride = true;
+                pawnSave.TargetTemperaturesOverride = true;
             }
 
         }
@@ -100,10 +101,31 @@ namespace Outfitter
                     pawnSave.Stats.Clear();
 
                     Dictionary<StatDef, float> updateAutoPriorities = _pawn.GetWeightedApparelStats();
+                    Dictionary<StatDef, float> updateIndividualPriorities = _pawn.GetWeightedApparelIndividualStats();
                     // clear auto priorities
                     _cache.RemoveAll(stat => stat.Assignment == StatAssignment.Automatic);
+                    _cache.RemoveAll(stat => stat.Assignment == StatAssignment.Individual);
 
                     // loop over each (new) stat
+
+                    foreach (KeyValuePair<StatDef, float> pair in updateIndividualPriorities)
+                    {
+                        // find index of existing priority for this stat
+                        int i = _cache.FindIndex(stat => stat.Stat == pair.Key);
+
+                        // if index -1 it doesnt exist yet, add it
+                        if (i < 0)
+                        {
+                            StatPriority individual = new StatPriority(pair.Key, pair.Value, StatAssignment.Individual);
+                            _cache.Add(individual);
+                        }
+                        else
+                        {
+                            // it exists, make sure existing is (now) of type override.
+                            _cache[i].Assignment = StatAssignment.Override;
+                        }
+                    }
+
                     foreach (KeyValuePair<StatDef, float> pair in updateAutoPriorities)
                     {
                         // find index of existing priority for this stat
@@ -128,7 +150,7 @@ namespace Outfitter
 
                 foreach (var statPriority in _cache)
                 {
-                    if (statPriority.Assignment != StatAssignment.Automatic)
+                    if (statPriority.Assignment != StatAssignment.Automatic && statPriority.Assignment != StatAssignment.Individual)
                     {
                         if (statPriority.Assignment != StatAssignment.Override)
                             statPriority.Assignment = StatAssignment.Manual;
@@ -195,19 +217,19 @@ namespace Outfitter
             _lastTempUpdate = -5000;
             _neededWarmth = CalculateNeededWarmth(_pawn);
         }
-        
+
         public static NeededWarmth CalculateNeededWarmth(Pawn pawn)
         {
             float temperature = GenTemperature.OutdoorTemp;
 
-            if (temperature<pawn.ComfortableTemperatureRange().min - 10f)
+            if (temperature - 15f < pawn.ComfortableTemperatureRange().min)
                 return NeededWarmth.Warm;
 
-            if (temperature > pawn.ComfortableTemperatureRange().max + 10f)
+            if (temperature + 15f > pawn.ComfortableTemperatureRange().max)
                 return NeededWarmth.Cool;
 
             return NeededWarmth.Any;
-            }
+        }
 
         public float ApparelScoreRaw(Apparel apparel, Pawn pawn)
         {
@@ -295,7 +317,7 @@ namespace Outfitter
                 //        Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score);
 
             }
-            score += ApparelScoreRaw_Temperature(apparel, pawn) / 10f;
+            score += ApparelScoreRaw_Temperature(apparel, pawn) / 5f;
 
             score += 0.125f * ApparelScoreRaw_ProtectionBaseStat(apparel);
 
@@ -410,205 +432,239 @@ namespace Outfitter
             float neededInsulation_Warmth = targetTemperatures.max - maxComfyTemperature;
 
 
-            switch (_neededWarmth)
+            // currently too cold
+            if (neededInsulation_Cold < 0)
             {
-                case NeededWarmth.Warm:
-                    {
-                        // currently too cold
-                        if (neededInsulation_Cold < 0)
-                        {
-                            temperatureScoreOffset += -insulationCold * tempWeight;
-                        }
-                        // currently warm enough
-                        else
-                        {
-                            // this gear would make us too cold
-                            if (insulationCold > neededInsulation_Cold)
-                            {
-                                temperatureScoreOffset += (neededInsulation_Cold - insulationCold) * tempWeight;
-                            }
-                        }
-                        break;
-                    }
-                case NeededWarmth.Cool:
-                    {
-                        // currently too warm
-                        if (neededInsulation_Warmth > 0)
-                        {
-                            temperatureScoreOffset += insulationHeat * tempWeight;
-                        }
-                        // currently cool enough
-                        else
-                        {
-                            // this gear would make us too warm
-                            if (insulationHeat < neededInsulation_Warmth)
-                            {
-                                temperatureScoreOffset += -(neededInsulation_Warmth - insulationHeat) * tempWeight;
-                            }
-                        }
-
-                        break;
-                    }
-                default:
-                    return 0f;
+                temperatureScoreOffset += -insulationCold * tempWeight;
             }
+            // currently warm enough
+            else
+            {
+                // this gear would make us too cold
+                if (insulationCold > neededInsulation_Cold)
+                {
+                    temperatureScoreOffset += (neededInsulation_Cold - insulationCold) * tempWeight;
+                }
+            }
+
+            // currently too warm
+            if (neededInsulation_Warmth > 0)
+            {
+                temperatureScoreOffset += insulationHeat * tempWeight;
+            }
+            // currently cool enough
+            else
+            {
+                // this gear would make us too warm
+                if (insulationHeat < neededInsulation_Warmth)
+                {
+                    temperatureScoreOffset += -(neededInsulation_Warmth - insulationHeat) * tempWeight;
+                }
+            }
+
+
 
             return temperatureScoreOffset;
         }
 
-        public static float ApparelScoreRaw_ProtectionBaseStat(Apparel ap)
-        {
-            float num = 1f;
-            float num2 = ap.GetStatValue(StatDefOf.ArmorRating_Sharp, true) + ap.GetStatValue(StatDefOf.ArmorRating_Blunt, true) * 0.75f;
-            return num + num2 * 1.25f;
-        }
+    public static float ApparelScoreRaw_ProtectionBaseStat(Apparel ap)
+    {
+        float num = 1f;
+        float num2 = ap.GetStatValue(StatDefOf.ArmorRating_Sharp, true) + ap.GetStatValue(StatDefOf.ArmorRating_Blunt, true) * 0.75f;
+        return num + num2 * 1.25f;
+    }
 
-        public void UpdateTemperatureIfNecessary(bool force = false)
+    public void UpdateTemperatureIfNecessary(bool force = false)
+    {
+        if (Find.TickManager.TicksGame - _lastTempUpdate > 1900 || force)
         {
-            if (Find.TickManager.TicksGame - _lastTempUpdate > 1900 || force)
+            // get desired temperatures
+            if (!targetTemperaturesOverride)
             {
-                // get desired temperatures
-                if (!targetTemperaturesOverride)
+
+                var temp = GenTemperature.AverageTemperatureAtWorldCoordsForMonth(Find.Map.WorldCoords, GenDate.CurrentMonth);
+
+                _targetTemperatures = new FloatRange(Math.Max(temp - 12f, ApparelStatsHelper.MinMaxTemperatureRange.min),
+                                                      Math.Min(temp + 12f, ApparelStatsHelper.MinMaxTemperatureRange.max));
+
+                if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
                 {
-
-                    var temp = GenTemperature.AverageTemperatureAtWorldCoordsForMonth(Find.Map.WorldCoords, GenDate.CurrentMonth);
-
-                    _targetTemperatures = new FloatRange(Math.Max(temp - 12f, ApparelStatsHelper.MinMaxTemperatureRange.min),
-                                                          Math.Min(temp + 12f, ApparelStatsHelper.MinMaxTemperatureRange.max));
-
-                    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
-                    {
-                        _targetTemperatures.min += 20;
-                        _targetTemperatures.max += 20;
-                    }
-
-                    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
-                    {
-                        _targetTemperatures.min -= 20;
-                        _targetTemperatures.max -= 20;
-                    }
-
-                    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_VolcanicWinter>().Any())
-                    {
-                        _targetTemperatures.min -= 7;
-                        _targetTemperatures.max -= 7;
-                    }
-                    var pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
-                    pawnSave.targetTemperaturesOverride = false;
+                    _targetTemperatures.min += 20;
+                    _targetTemperatures.max += 20;
                 }
 
-                _temperatureWeight = GenTemperature.OutdoorTemperatureAcceptableFor(_pawn.def) ? 0.25f : 1f;
-            }
-        }
-
-        public static void DrawStatRow(ref Vector2 cur, float width, StatPriority stat, Pawn pawn, out bool stop_ui)
-        {
-            // sent a signal if the statlist has changed
-            stop_ui = false;
-
-            // set up rects
-            Rect labelRect = new Rect(cur.x, cur.y, (width - 24) / 2f - 12f, 30f);
-            Rect sliderRect = new Rect(labelRect.xMax + 4f, cur.y + 5f, labelRect.width, 25f);
-            Rect buttonRect = new Rect(sliderRect.xMax + 4f, cur.y + 3f, 16f, 16f);
-
-            // draw label
-            Text.Font = Text.CalcHeight(stat.Stat.LabelCap, labelRect.width) > labelRect.height
-                ? GameFont.Tiny
-                : GameFont.Small;
-            Widgets.Label(labelRect, stat.Stat.LabelCap);
-            Text.Font = GameFont.Small;
-
-            // draw button
-            // if manually added, delete the priority
-            string buttonTooltip = String.Empty;
-            if (stat.Assignment == StatAssignment.Manual)
-            {
-                buttonTooltip = "StatPriorityDelete".Translate(stat.Stat.LabelCap);
-                if (Widgets.ButtonImage(buttonRect, OutfitterTextures.deleteButton))
+                if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
                 {
-                    stat.Delete(pawn);
-                    stop_ui = true;
+                    _targetTemperatures.min -= 20;
+                    _targetTemperatures.max -= 20;
                 }
-            }
-            // if overridden auto assignment, reset to auto
-            if (stat.Assignment == StatAssignment.Override)
-            {
-                buttonTooltip = "StatPriorityReset".Translate(stat.Stat.LabelCap);
-                if (Widgets.ButtonImage(buttonRect, OutfitterTextures.resetButton))
+
+                if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_VolcanicWinter>().Any())
                 {
-                    stat.Reset(pawn);
-                    stop_ui = true;
+                    _targetTemperatures.min -= 7;
+                    _targetTemperatures.max -= 7;
                 }
+                var pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
+                pawnSave.TargetTemperaturesOverride = false;
             }
 
-            // draw line behind slider
-            GUI.color = new Color(.3f, .3f, .3f);
-            for (int y = (int)cur.y; y < cur.y + 30; y += 5)
-            {
-                Widgets.DrawLineVertical((sliderRect.xMin + sliderRect.xMax) / 2f, y, 3f);
-            }
-
-            // draw slider 
-            GUI.color = stat.Assignment == StatAssignment.Automatic ? Color.grey : Color.white;
-            float weight = GUI.HorizontalSlider(sliderRect, stat.Weight, -1f, 1f);
-            if (Mathf.Abs(weight - stat.Weight) > 1e-4)
-            {
-                stat.Weight = weight;
-                if (stat.Assignment == StatAssignment.Automatic)
-                {
-                    stat.Assignment = StatAssignment.Override;
-                }
-            }
-            GUI.color = Color.white;
-
-            // tooltips
-            TooltipHandler.TipRegion(labelRect, stat.Stat.LabelCap + "\n\n" + stat.Stat.description);
-            if (buttonTooltip != String.Empty)
-                TooltipHandler.TipRegion(buttonRect, buttonTooltip);
-            TooltipHandler.TipRegion(sliderRect, stat.Weight.ToStringByStyle(ToStringStyle.FloatTwo));
-
-            // advance row
-            cur.y += 30f;
-        }
-
-        public class StatPriority
-        {
-            public StatDef Stat { get; }
-            public StatAssignment Assignment { get; set; }
-            public float Weight { get; set; }
-
-            public StatPriority(StatDef stat, float priority, StatAssignment assignment = StatAssignment.Automatic)
-            {
-                Stat = stat;
-                Weight = priority;
-                Assignment = assignment;
-            }
-
-            public StatPriority(KeyValuePair<StatDef, float> statDefWeightPair,
-                                 StatAssignment assignment = StatAssignment.Automatic)
-            {
-                Stat = statDefWeightPair.Key;
-                Weight = statDefWeightPair.Value;
-                Assignment = assignment;
-            }
-
-            public void Delete(Pawn pawn)
-            {
-                pawn.GetApparelStatCache()._cache.Remove(this);
-
-                var pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
-                pawnSave.Stats.RemoveAll(i => i.Stat == Stat);
-            }
-
-            public void Reset(Pawn pawn)
-            {
-                Dictionary<StatDef, float> stats = pawn.GetWeightedApparelStats();
-                Weight = stats[Stat];
-                Assignment = StatAssignment.Automatic;
-
-                var pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
-                pawnSave.Stats.RemoveAll(i => i.Stat == Stat);
-            }
+            _temperatureWeight = GenTemperature.OutdoorTemperatureAcceptableFor(_pawn.def) ? 0.25f : 1f;
         }
     }
+
+    public static void DrawStatRow(ref Vector2 cur, float width, StatPriority stat, Pawn pawn, out bool stop_ui)
+    {
+        // sent a signal if the statlist has changed
+        stop_ui = false;
+
+        // set up rects
+        Rect labelRect = new Rect(cur.x, cur.y, (width - 24) / 2f, 30f);
+        Rect sliderRect = new Rect(labelRect.xMax + 4f, cur.y + 5f, labelRect.width, 25f);
+        Rect buttonRect = new Rect(sliderRect.xMax + 4f, cur.y + 3f, 16f, 16f);
+
+        // draw label
+        Text.Font = Text.CalcHeight(stat.Stat.LabelCap, labelRect.width) > labelRect.height
+            ? GameFont.Tiny
+            : GameFont.Small;
+        switch (stat.Assignment)
+        {
+            case StatAssignment.Automatic:
+                GUI.color = Color.grey;
+                break;
+            case StatAssignment.Individual:
+                GUI.color = Color.cyan;
+                break;
+            case StatAssignment.Manual:
+                GUI.color = Color.white;
+                break;
+            case StatAssignment.Override:
+                GUI.color = new Color(0.8f, 0.8f, 0.8f);
+                break;
+            default:
+                GUI.color = Color.white;
+                break;
+        }
+        Widgets.Label(labelRect, stat.Stat.LabelCap);
+        Text.Font = GameFont.Small;
+
+        // draw button
+        // if manually added, delete the priority
+        string buttonTooltip = String.Empty;
+        if (stat.Assignment == StatAssignment.Manual)
+        {
+            buttonTooltip = "StatPriorityDelete".Translate(stat.Stat.LabelCap);
+            if (Widgets.ButtonImage(buttonRect, OutfitterTextures.deleteButton))
+            {
+                stat.Delete(pawn);
+                stop_ui = true;
+            }
+        }
+        // if overridden auto assignment, reset to auto
+        if (stat.Assignment == StatAssignment.Override)
+        {
+            buttonTooltip = "StatPriorityReset".Translate(stat.Stat.LabelCap);
+            if (Widgets.ButtonImage(buttonRect, OutfitterTextures.resetButton))
+            {
+                stat.Reset(pawn);
+                stop_ui = true;
+            }
+        }
+
+        // draw line behind slider
+        GUI.color = new Color(.3f, .3f, .3f);
+        for (int y = (int)cur.y; y < cur.y + 30; y += 5)
+        {
+            Widgets.DrawLineVertical((sliderRect.xMin + sliderRect.xMax) / 2f, y, 3f);
+        }
+
+        // draw slider 
+        switch (stat.Assignment)
+        {
+            case StatAssignment.Automatic:
+                GUI.color = Color.grey;
+                break;
+            case StatAssignment.Individual:
+                GUI.color = Color.cyan;
+                break;
+            case StatAssignment.Manual:
+                GUI.color = Color.white;
+                break;
+            case StatAssignment.Override:
+                GUI.color = new Color(0.8f, 0.8f, 0.8f);
+                break;
+            default:
+                GUI.color = Color.white;
+                break;
+        }
+        float weight = GUI.HorizontalSlider(sliderRect, stat.Weight, -1.5f, 1.5f);
+        if (Mathf.Abs(weight - stat.Weight) > 1e-4)
+        {
+            stat.Weight = weight;
+            if (stat.Assignment == StatAssignment.Automatic || stat.Assignment == StatAssignment.Individual)
+            {
+                stat.Assignment = StatAssignment.Override;
+            }
+        }
+        GUI.color = Color.white;
+
+        // tooltips
+        TooltipHandler.TipRegion(labelRect, stat.Stat.LabelCap + "\n\n" + stat.Stat.description);
+        if (buttonTooltip != String.Empty)
+            TooltipHandler.TipRegion(buttonRect, buttonTooltip);
+        TooltipHandler.TipRegion(sliderRect, stat.Weight.ToStringByStyle(ToStringStyle.FloatTwo));
+
+        // advance row
+        cur.y += 30f;
+    }
+
+    public class StatPriority
+    {
+        public StatDef Stat { get; }
+        public StatAssignment Assignment { get; set; }
+        public float Weight { get; set; }
+
+        public StatPriority(StatDef stat, float priority, StatAssignment assignment = StatAssignment.Automatic)
+        {
+            Stat = stat;
+            Weight = priority;
+            Assignment = assignment;
+        }
+
+        public StatPriority(KeyValuePair<StatDef, float> statDefWeightPair,
+                             StatAssignment assignment = StatAssignment.Automatic)
+        {
+            Stat = statDefWeightPair.Key;
+            Weight = statDefWeightPair.Value;
+            Assignment = assignment;
+        }
+
+        public void Delete(Pawn pawn)
+        {
+            pawn.GetApparelStatCache()._cache.Remove(this);
+
+            var pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
+            pawnSave.Stats.RemoveAll(i => i.Stat == Stat);
+        }
+
+        public void Reset(Pawn pawn)
+        {
+            Dictionary<StatDef, float> stats = pawn.GetWeightedApparelStats();
+            Dictionary<StatDef, float> indiStats = pawn.GetWeightedApparelIndividualStats();
+
+            if (stats.ContainsKey(Stat))
+            {
+                Weight = stats[Stat];
+                Assignment = StatAssignment.Automatic;
+            }
+
+            if (indiStats.ContainsKey(Stat))
+            {
+                Weight = indiStats[Stat];
+                Assignment = StatAssignment.Individual;
+            }
+            var pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
+            pawnSave.Stats.RemoveAll(i => i.Stat == Stat);
+        }
+    }
+}
 }

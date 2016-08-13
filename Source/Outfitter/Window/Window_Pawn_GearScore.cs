@@ -9,7 +9,7 @@ using Verse.Sound;
 
 namespace Outfitter
 {
-    public sealed class Window_Pawn_GearScore :  Window
+    public sealed class Window_Pawn_GearScore : Window
     {
         #region Modded 1
         private bool CanEdit { get { return SelPawn.IsColonistPlayerControlled; } }
@@ -20,9 +20,9 @@ namespace Outfitter
 
         private const float ThingIconSize = 32f;
 
-        private const float ThingRowHeight = 38f;
+        private const float ThingRowHeight = 48f;
 
-        private const float ThingLeftX = 36f;
+        private const float ThingLeftX = 40f;
 
         private Vector2 scrollPosition = Vector2.zero;
 
@@ -34,7 +34,8 @@ namespace Outfitter
 
         private static List<Thing> workingInvList = new List<Thing>();
 
-        public  bool IsVisible
+
+        public bool IsVisible
         {
             get
             {
@@ -56,7 +57,7 @@ namespace Outfitter
             preventCameraMotion = false;
         }
 
-        public new Vector2 InitialSize = new Vector2(432f,500f);
+        public new Vector2 InitialSize = new Vector2(298f, 550f);
 
         protected override void SetInitialSizeAndPosition()
         {
@@ -75,17 +76,16 @@ namespace Outfitter
         private Pawn SelPawn => Find.Selector.SingleSelectedThing as Pawn;
 
         public override void DoWindowContents(Rect rect)
-        {            
+        {
             // main canvas
             Text.Font = GameFont.Small;
-            Rect rect2 = rect;
-       //     Rect rect2 = rect.ContractedBy(10f);
-            Rect position = new Rect(rect2.x, rect2.y, rect2.width, rect2.height);
-            GUI.BeginGroup(position);
+            //     Rect rect2 = rect.ContractedBy(10f);
+            Rect calcScore = new Rect(rect.x, rect.y, rect.width, rect.height);
+            GUI.BeginGroup(calcScore);
             Text.Font = GameFont.Small;
             GUI.color = Color.white;
-            Rect outRect = new Rect(0f, 0f, position.width, position.height);
-            Rect viewRect = new Rect(0f, 0f, position.width - 16f, scrollViewHeight);
+            Rect outRect = new Rect(0f, 0f, calcScore.width, calcScore.height);
+            Rect viewRect = new Rect(0f, 0f, calcScore.width - 16f, scrollViewHeight);
             Widgets.BeginScrollView(outRect, ref scrollPosition, viewRect);
             float num = 0f;
 
@@ -99,6 +99,7 @@ namespace Outfitter
                     DrawThingRowModded(ref num, viewRect.width, current2);
                 }
             }
+
 
             if (Event.current.type == EventType.Layout)
             {
@@ -120,7 +121,7 @@ namespace Outfitter
 
             if (ap == null)
             {
-                DrawThingRowVanilla(ref y,width,thing);
+                DrawThingRowVanilla(ref y, width, thing);
                 return;
             }
 
@@ -133,26 +134,28 @@ namespace Outfitter
             }
             GUI.color = _thingLabelColor;
 
-            Rect rect2a = new Rect(rect.width - 24f, y + 3f, 24f, 24f);
+         // Rect rect2a = new Rect(rect.width - 24f, y + 3f, 24f, 24f);
+         //
+         // TooltipHandler.TipRegion(rect2a, "DefInfoTip".Translate());
+         // if (Widgets.ButtonImage(rect2a, LocalTextures.Info))
+         // {
+         //     Find.WindowStack.Add(new Dialog_InfoCard(thing));
+         // }
+         //
+         // rect.width -= 24f;
+         // if (CanControl)
+         // {
+         //     Rect rect2 = new Rect(rect.width - 24f, y + 3f, 24f, 24f);
+         //     TooltipHandler.TipRegion(rect2, "DropThing".Translate());
+         //     if (Widgets.ButtonImage(rect2, LocalTextures.Drop))
+         //     {
+         //         SoundDefOf.TickHigh.PlayOneShotOnCamera();
+         //         InterfaceDrop(thing);
+         //     }
+         //     rect.width -= 24f;
+         // }
 
-            TooltipHandler.TipRegion(rect2a, "DefInfoTip".Translate());
-            if (Widgets.ButtonImage(rect2a, LocalTextures.Info))
-            {
-                Find.WindowStack.Add(new Dialog_InfoCard(thing));
-            }
 
-            rect.width -= 24f;
-            if (CanControl)
-            {
-                Rect rect2 = new Rect(rect.width - 24f, y + 3f, 24f, 24f);
-                TooltipHandler.TipRegion(rect2, "DropThing".Translate());
-                if (Widgets.ButtonImage(rect2, LocalTextures.Drop))
-                {
-                    SoundDefOf.TickHigh.PlayOneShotOnCamera();
-                    InterfaceDrop(thing);
-                }
-                rect.width -= 24f;
-            }
 
             #region Button Clicks
 
@@ -160,10 +163,10 @@ namespace Outfitter
 
             if (Widgets.ButtonInvisible(rect))
             {
-                //Middle Mouse Button Menu
-                if (Event.current.button == 2)
+                //Left Mouse Button Menu
+                if (Event.current.button == 0)
                 {
-                    Find.WindowStack.Add(new Window_PawnApparelDetail(SelPawn, (Apparel)thing));
+                    Find.WindowStack.Add(new Window_PawnApparelDetail(SelPawn,ap));
                 }
 
                 // RMB menu
@@ -207,16 +210,6 @@ namespace Outfitter
                         floatOptionList.Add(new FloatMenuOption("DropThing".Translate(), action, MenuOptionPriority.Medium, null, null));
                     }
 
-                    if ((SelPawn != null) &&
-                        (thing is Apparel))
-                    {
-
-                        floatOptionList.Add(new FloatMenuOption("Outfitter Details", delegate
-                        {
-                            Find.WindowStack.Add(new Window_PawnApparelDetail(SelPawn, (Apparel)thing));
-                        }));
-                    }
-
                     FloatMenu window = new FloatMenu(floatOptionList, "");
                     Find.WindowStack.Add(window);
                 }
@@ -231,7 +224,7 @@ namespace Outfitter
             }
             Text.Anchor = TextAnchor.MiddleLeft;
             GUI.color = ThingLabelColor;
-            Rect rect3 = new Rect(ThingLeftX, y, width - ThingLeftX - 58f, ThingRowHeight);
+            Rect textRect = new Rect(ThingLeftX, y, width - ThingLeftX, ThingRowHeight);
             #region Modded
             ApparelStatCache conf = new ApparelStatCache(SelPawn);
             string text = thing.LabelCap;
@@ -245,7 +238,7 @@ namespace Outfitter
             {
                 text = text + ", " + text_Score;
             }
-            Widgets.Label(rect3, text);
+            Widgets.Label(textRect, text);
             y += ThingRowHeight;
         }
 
@@ -254,10 +247,10 @@ namespace Outfitter
             Rect rect = new Rect(0f, y, width, 28f);
             if (Mouse.IsOver(rect))
             {
-                GUI.color=(_highlightColor);
+                GUI.color = (_highlightColor);
                 GUI.DrawTexture(rect, TexUI.HighlightTex);
             }
-            GUI.color=_thingLabelColor;
+            GUI.color = _thingLabelColor;
             Rect rect2a = new Rect(rect.width - 24f, y, 24f, 24f);
             TutorUIHighlighter.HighlightOpportunity("InfoCard", rect);
             TooltipHandler.TipRegion(rect2a, "DefInfoTip".Translate());
@@ -318,5 +311,7 @@ namespace Outfitter
                 SelPawn.inventory.container.TryDrop(t, SelPawn.Position, ThingPlaceMode.Near, out thing, null);
             }
         }
+
+
     }
 }

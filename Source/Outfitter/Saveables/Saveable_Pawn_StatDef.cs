@@ -24,18 +24,6 @@ namespace Outfitter
             Assignment = assignment;
         }
 */
-        public void Delete(Pawn pawn)
-        {
-            SaveablePawn newPawnSaveable = MapComponent_Outfitter.Get.GetCache(pawn);
-            newPawnSaveable.Stats.Remove(this);
-        }
-
-        public void Reset(Pawn pawn)
-        {
-            Dictionary<StatDef, float> stats = pawn.GetWeightedApparelStats();
-            Weight = stats[Stat];
-            Assignment = StatAssignment.Automatic;
-        }
 
         public void ExposeData()
         {

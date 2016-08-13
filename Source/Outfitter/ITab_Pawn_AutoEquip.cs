@@ -14,16 +14,21 @@ namespace Outfitter
 
         public ITab_Pawn_Outfitter()
         {
-            size = new Vector2(432f, 500f);
+            size = new Vector2(432f, 550f);
             labelKey = "OutfitterTab";
         }
 
-        Window_Pawn_GearScore _windowGearScore = new Window_Pawn_GearScore();
+        public override void OnOpen()
+        {
+            Find.WindowStack.Add(new Window_Pawn_GearScore());
+        }
 
         protected override void FillTab()
         {
+            var pawnSave = MapComponent_Outfitter.Get.GetCache(SelPawn);
+
             // Outfit + Status button
-            Rect rectStatus = new Rect(10f, 15f, 100f, 30f);
+            Rect rectStatus = new Rect(10f, 10f, 120f, 30f);
 
             // select outfit
 
@@ -44,7 +49,7 @@ namespace Outfitter
             //edit outfit
             rectStatus = new Rect(rectStatus.xMax + 10f, rectStatus.y, rectStatus.width, rectStatus.height);
 
-            if (Widgets.ButtonText(rectStatus, "OutfitEdit".Translate(), true, false))
+            if (Widgets.ButtonText(rectStatus, "OutfitterEditOutfit".Translate(), true, false))
             {
                 Find.WindowStack.Add(new Dialog_ManageOutfits(SelPawn.outfits.CurrentOutfit));
             }
@@ -52,17 +57,25 @@ namespace Outfitter
             //show outfit
             rectStatus = new Rect(rectStatus.xMax + 10f, rectStatus.y, rectStatus.width, rectStatus.height);
 
+
+
             if (Widgets.ButtonText(rectStatus, "OutfitShow".Translate(), true, false))
             {
-                Find.WindowStack.Add(_windowGearScore);
+                Find.WindowStack.Add(new Window_Pawn_GearScore());
             }
 
+
+            // Status checkboxes
+            Rect rectCheckboxes = new Rect(10f, rectStatus.yMax + 15f, (size.x - 30f) / 2, rectStatus.height);
+            Text.Font= GameFont.Small;
+            pawnSave.AddWorkStats = GUI.Toggle(new Rect(rectCheckboxes), pawnSave.AddWorkStats, "AddWorkStats".Translate());
+            pawnSave.AddIndividualStats = GUI.Toggle(new Rect(rectCheckboxes.xMax+10f, rectCheckboxes.y,rectCheckboxes.width,rectCheckboxes.height),
+                pawnSave.AddIndividualStats, "AddIndividualStats".Translate());
+
             // main canvas
-            Rect canvas = new Rect(0f, 0f, size.x, size.y).ContractedBy(20f);
+            Rect canvas = new Rect(0f, 60f, size.x, size.y-60f).ContractedBy(20f);
             GUI.BeginGroup(canvas);
             Vector2 cur = Vector2.zero;
-
-            cur.y += 30f;
 
             // header
             Rect tempHeaderRect = new Rect(cur.x, cur.y, canvas.width, 30f);
@@ -176,9 +189,9 @@ namespace Outfitter
                 Text.Font = GameFont.Tiny;
                 GUI.color = Color.grey;
                 Text.Anchor = TextAnchor.LowerLeft;
-                Widgets.Label(legendRect, "-1");
+                Widgets.Label(legendRect, "-1.5");
                 Text.Anchor = TextAnchor.LowerRight;
-                Widgets.Label(legendRect, "1");
+                Widgets.Label(legendRect, "1.5");
                 Text.Anchor = TextAnchor.UpperLeft;
                 Text.Font = GameFont.Small;
                 GUI.color = Color.white;

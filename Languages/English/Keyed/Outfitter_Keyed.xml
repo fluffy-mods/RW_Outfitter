@@ -15,14 +15,17 @@
   <AverageStat>Pawn Stat Offset</AverageStat>
   <AverageWorkStat>Pawn Work Offset</AverageWorkStat>
   <OutfitterHitPoints>Hit Points Modifier</OutfitterHitPoints>
-  <OutfitterTemperature>Outdoor Temperature Modifier</OutfitterTemperature>
+  <OutfitterTemperature>Outdoor Temperature</OutfitterTemperature>
   <OutfitterTotal>Apparel Total Stat</OutfitterTotal>
   <OutfitterArmor>Protection Score</OutfitterArmor>
   <BasicStatusOfApparel>Basic Apparel Offset</BasicStatusOfApparel>
   <OutfitterGlobalSelection>Global Selection</OutfitterGlobalSelection>
   <AppendIndividualStats>Append Individual Status</AppendIndividualStats>
+  <OutfitterEditOutfit>Edit Outfit...</OutfitterEditOutfit>
   <OutfitterStatus>Status...</OutfitterStatus>
   <PreferedTemperature>Prefered Temperature</PreferedTemperature>
   <EquipmentAndInventory>Equipment And Inventory</EquipmentAndInventory>
   <WornApparel>Worn Apparel</WornApparel>
+  <AddWorkStats>Add Work Stats</AddWorkStats>
+  <AddIndividualStats>Add Individual Stats</AddIndividualStats>
 </LanguageData>

@@ -32,11 +32,17 @@ namespace Outfitter
             }
         }
 
+        protected override void SetInitialSizeAndPosition()
+        {
+            MainTabWindow_Inspect inspectWorker = (MainTabWindow_Inspect)MainTabDefOf.Inspect.Window;
+            windowRect = new Rect(730f, (inspectWorker.PaneTopY - 30f - InitialSize.y), InitialSize.x, InitialSize.y).Rounded();
+        }
+
         public override Vector2 InitialSize
         {
             get
             {
-                return new Vector2(700f, 700f);
+                return new Vector2(550f, 550f);
             }
         }
 
@@ -269,7 +275,7 @@ namespace Outfitter
                 "+", multiplierWidth,
                 score.ToString("N2"), finalValue);
 
-            score += conf.ApparelScoreRaw_Temperature(_apparel, _pawn) / 10f;
+            score += conf.ApparelScoreRaw_Temperature(_apparel, _pawn) / 5f;
 
             itemRect = new Rect(listRect.xMin, itemRect.yMax, listRect.width, Text.LineHeight * 1.2f);
             DrawLine(ref itemRect,
