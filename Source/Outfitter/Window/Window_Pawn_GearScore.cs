@@ -20,7 +20,7 @@ namespace Outfitter
 
         private const float ThingIconSize = 32f;
 
-        private const float ThingRowHeight = 48f;
+        private const float ThingRowHeight = 64f;
 
         private const float ThingLeftX = 40f;
 
@@ -31,8 +31,6 @@ namespace Outfitter
         private static readonly Color ThingLabelColor = new Color(0.9f, 0.9f, 0.9f, 1f);
 
         private static readonly Color HighlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-
-        private static List<Thing> workingInvList = new List<Thing>();
 
 
         public bool IsVisible
@@ -69,6 +67,7 @@ namespace Outfitter
         {
             if (SelPawn == null)
             {
+                
                 Close(false);
             }
         }
@@ -85,7 +84,12 @@ namespace Outfitter
             Text.Font = GameFont.Small;
             GUI.color = Color.white;
             Rect outRect = new Rect(0f, 0f, calcScore.width, calcScore.height);
-            Rect viewRect = new Rect(0f, 0f, calcScore.width - 16f, scrollViewHeight);
+            Rect viewRect = outRect;
+            viewRect.height = scrollViewHeight;
+            if (viewRect.height > outRect.height)
+            {
+                viewRect.width -= 20f;
+            }
             Widgets.BeginScrollView(outRect, ref scrollPosition, viewRect);
             float num = 0f;
 
@@ -134,26 +138,26 @@ namespace Outfitter
             }
             GUI.color = _thingLabelColor;
 
-         // Rect rect2a = new Rect(rect.width - 24f, y + 3f, 24f, 24f);
-         //
-         // TooltipHandler.TipRegion(rect2a, "DefInfoTip".Translate());
-         // if (Widgets.ButtonImage(rect2a, LocalTextures.Info))
-         // {
-         //     Find.WindowStack.Add(new Dialog_InfoCard(thing));
-         // }
-         //
-         // rect.width -= 24f;
-         // if (CanControl)
-         // {
-         //     Rect rect2 = new Rect(rect.width - 24f, y + 3f, 24f, 24f);
-         //     TooltipHandler.TipRegion(rect2, "DropThing".Translate());
-         //     if (Widgets.ButtonImage(rect2, LocalTextures.Drop))
-         //     {
-         //         SoundDefOf.TickHigh.PlayOneShotOnCamera();
-         //         InterfaceDrop(thing);
-         //     }
-         //     rect.width -= 24f;
-         // }
+            // Rect rect2a = new Rect(rect.width - 24f, y + 3f, 24f, 24f);
+            //
+            // TooltipHandler.TipRegion(rect2a, "DefInfoTip".Translate());
+            // if (Widgets.ButtonImage(rect2a, LocalTextures.Info))
+            // {
+            //     Find.WindowStack.Add(new Dialog_InfoCard(thing));
+            // }
+            //
+            // rect.width -= 24f;
+            // if (CanControl)
+            // {
+            //     Rect rect2 = new Rect(rect.width - 24f, y + 3f, 24f, 24f);
+            //     TooltipHandler.TipRegion(rect2, "DropThing".Translate());
+            //     if (Widgets.ButtonImage(rect2, LocalTextures.Drop))
+            //     {
+            //         SoundDefOf.TickHigh.PlayOneShotOnCamera();
+            //         InterfaceDrop(thing);
+            //     }
+            //     rect.width -= 24f;
+            // }
 
 
 
@@ -166,7 +170,7 @@ namespace Outfitter
                 //Left Mouse Button Menu
                 if (Event.current.button == 0)
                 {
-                    Find.WindowStack.Add(new Window_PawnApparelDetail(SelPawn,ap));
+                    Find.WindowStack.Add(new Window_PawnApparelDetail(SelPawn, ap));
                 }
 
                 // RMB menu
@@ -224,7 +228,8 @@ namespace Outfitter
             }
             Text.Anchor = TextAnchor.MiddleLeft;
             GUI.color = ThingLabelColor;
-            Rect textRect = new Rect(ThingLeftX, y, width - ThingLeftX, ThingRowHeight);
+            Rect textRect = new Rect(ThingLeftX, y, width - ThingLeftX, ThingRowHeight-Text.LineHeight);
+            Rect scoreRect = new Rect(ThingLeftX, textRect.yMax, width - ThingLeftX, Text.LineHeight);
             #region Modded
             ApparelStatCache conf = new ApparelStatCache(SelPawn);
             string text = thing.LabelCap;
@@ -233,12 +238,13 @@ namespace Outfitter
             if (thing is Apparel && SelPawn.outfits != null && SelPawn.outfits.forcedHandler.IsForced((Apparel)thing))
             {
                 text = text + ", " + "ApparelForcedLower".Translate();
+                Widgets.Label(textRect, text);
             }
             else
             {
-                text = text + ", " + text_Score;
+                Widgets.Label(textRect, text);
+                Widgets.Label(scoreRect, text_Score);
             }
-            Widgets.Label(textRect, text);
             y += ThingRowHeight;
         }
 

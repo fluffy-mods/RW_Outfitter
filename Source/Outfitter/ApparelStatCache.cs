@@ -317,9 +317,9 @@ namespace Outfitter
                 //        Debug.LogWarning(statPriority.Stat.LabelCap + " infusion: " + score);
 
             }
-            score += ApparelScoreRaw_Temperature(apparel, pawn) / 5f;
+            score += ApparelScoreRaw_Temperature(apparel, pawn) / 10f;
 
-            score += 0.125f * ApparelScoreRaw_ProtectionBaseStat(apparel);
+            score += 0.05f * ApparelScoreRaw_ProtectionBaseStat(apparel);
 
             // offset for apparel hitpoints 
             if (apparel.def.useHitPoints)
@@ -386,8 +386,8 @@ namespace Outfitter
 
             FloatRange targetTemperatures = pawn.GetApparelStatCache().TargetTemperatures;
 
-            float minComfyTemperature = pawn.ComfortableTemperatureRange().min;
-            float maxComfyTemperature = pawn.ComfortableTemperatureRange().max;
+            float minComfyTemperature =  pawn.SafeTemperatureRange().min;
+            float maxComfyTemperature = pawn.SafeTemperatureRange().max;
             //float minComfyTemperature = pawn.GetStatValue(StatDefOf.ComfyTemperatureMin);
             //float maxComfyTemperature = pawn.GetStatValue(StatDefOf.ComfyTemperatureMax);
 
@@ -538,7 +538,7 @@ namespace Outfitter
                 GUI.color = Color.white;
                 break;
             case StatAssignment.Override:
-                GUI.color = new Color(0.8f, 0.8f, 0.8f);
+                GUI.color = new Color(0.75f, 0.75f, 0.75f);
                 break;
             default:
                 GUI.color = Color.white;
