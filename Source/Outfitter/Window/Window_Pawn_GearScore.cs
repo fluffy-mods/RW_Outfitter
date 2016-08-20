@@ -37,7 +37,29 @@ namespace Outfitter
         {
             get
             {
-                return SelPawn.RaceProps.ToolUser || SelPawn.inventory.container.Any();
+                if (!typeof(ITab_Pawn_Outfitter).IsVisible)
+                {
+                    return false;
+                }
+
+                // thing selected is a pawn
+                if (SelPawn == null)
+                {
+                    return false;
+                }
+
+                // of this colony
+                if (SelPawn.Faction != Faction.OfPlayer)
+                {
+                    return false;
+                }
+
+                // and has apparel (that should block everything without apparel, animals, bots, that sort of thing)
+                if (SelPawn.apparel == null)
+                {
+                    return false;
+                }
+                return true;
             }
         }
 
@@ -65,9 +87,8 @@ namespace Outfitter
 
         public override void WindowUpdate()
         {
-            if (SelPawn == null)
+            if (!IsVisible)
             {
-                
                 Close(false);
             }
         }
@@ -192,7 +213,8 @@ namespace Outfitter
                             Apparel unused;
                             action = delegate
                             {
-                                SelPawn.apparel.TryDrop(ap, out unused, SelPawn.Position, true);
+                                InterfaceDrop(thing);
+                               // SelPawn.apparel.TryDrop(ap, out unused, SelPawn.Position, true);
                             };
                         }
                         else if (eq != null && SelPawn.equipment.AllEquipment.Contains(eq))
@@ -228,7 +250,7 @@ namespace Outfitter
             }
             Text.Anchor = TextAnchor.MiddleLeft;
             GUI.color = ThingLabelColor;
-            Rect textRect = new Rect(ThingLeftX, y, width - ThingLeftX, ThingRowHeight-Text.LineHeight);
+            Rect textRect = new Rect(ThingLeftX, y, width - ThingLeftX, ThingRowHeight - Text.LineHeight);
             Rect scoreRect = new Rect(ThingLeftX, textRect.yMax, width - ThingLeftX, Text.LineHeight);
             #region Modded
             ApparelStatCache conf = new ApparelStatCache(SelPawn);
@@ -242,7 +264,9 @@ namespace Outfitter
             }
             else
             {
+                GUI.color = new Color(0.75f, 0.75f, 0.75f);
                 Widgets.Label(textRect, text);
+                GUI.color = Color.white;
                 Widgets.Label(scoreRect, text_Score);
             }
             y += ThingRowHeight;

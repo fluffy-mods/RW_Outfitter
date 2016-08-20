@@ -17,6 +17,7 @@ namespace Outfitter
             doCloseX = true;
             closeOnEscapeKey = true;
             doCloseButton = true;
+            preventCameraMotion = false;
 
             _pawn = pawn;
             _apparel = apparel;
@@ -24,10 +25,39 @@ namespace Outfitter
 
         private Pawn SelPawn => Find.Selector.SingleSelectedThing as Pawn;
 
+        public bool IsVisible
+        {
+            get
+            {
+                if (!typeof(ITab_Pawn_Outfitter).IsVisible)
+                {
+                    return false;
+                }
+
+                // thing selected is a pawn
+                if (SelPawn == null)
+                {
+                    return false;
+                }
+
+                // of this colony
+                if (SelPawn.Faction != Faction.OfPlayer)
+                {
+                    return false;
+                }
+
+                // and has apparel (that should block everything without apparel, animals, bots, that sort of thing)
+                if (SelPawn.apparel == null)
+                {
+                    return false;
+                }
+                return true;
+            }
+        }
 
         public override void WindowUpdate()
         {
-            if (SelPawn == null)
+            if (!IsVisible)
             {
                 Close(false);
             }
@@ -104,7 +134,7 @@ namespace Outfitter
                 "Strengh", multiplierWidth,
                 "Score", finalValue);
 
-            Widgets.DrawLineHorizontal(contentRect.x, contentRect.y+Text.LineHeight*1.2f, contentRect.width);
+            Widgets.DrawLineHorizontal(contentRect.x, contentRect.y + Text.LineHeight * 1.2f, contentRect.width);
 
             HashSet<StatDef> equippedOffsets = new HashSet<StatDef>();
             if (_apparel.def.equippedStatOffsets != null)
@@ -129,12 +159,12 @@ namespace Outfitter
 
             Rect scrollviewRect = contentRect;
 
-            scrollviewRect.yMin += Text.LineHeight*2f;
+            scrollviewRect.yMin += Text.LineHeight * 2f;
             scrollviewRect.height -= Text.LineHeight;
 
             Rect viewRect = scrollviewRect;
 
-            viewRect.height = (equippedOffsets.Count+ statBases.Count+ApparelStatCache.infusedOffsets.Count)* Text.LineHeight*1.2f+16f;
+            viewRect.height = (equippedOffsets.Count + statBases.Count + ApparelStatCache.infusedOffsets.Count) * Text.LineHeight * 1.2f + 16f;
             if (viewRect.height > scrollviewRect.height)
             {
                 viewRect.width -= 20f;
@@ -271,12 +301,12 @@ namespace Outfitter
                 "+", multiplierWidth,
                 score.ToString("N2"), finalValue);
 
-            score += conf.ApparelScoreRaw_Temperature(_apparel, _pawn) / 10f;
+            score += conf.ApparelScoreRaw_Temperature(_apparel, _pawn) / 10;
 
             itemRect = new Rect(windowRect.x, itemRect.yMax, windowRect.width, Text.LineHeight * 1.2f);
             DrawLine(ref itemRect,
                 "OutfitterTemperature".Translate(), labelWidth,
-                (conf.ApparelScoreRaw_Temperature(_apparel, _pawn) / 10f).ToString("N2"), baseValue,
+                (conf.ApparelScoreRaw_Temperature(_apparel, _pawn) / 10).ToString("N2"), baseValue,
                 "+", multiplierWidth,
                 score.ToString("N2"), finalValue);
 

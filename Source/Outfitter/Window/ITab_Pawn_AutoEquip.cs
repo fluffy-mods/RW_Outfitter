@@ -102,7 +102,7 @@ namespace Outfitter
             cur.y += 60f; // includes padding 
 
             // current temperature settings
-            GUI.color = pawnStatCache.targetTemperaturesOverride ? Color.white : Color.grey;
+            GUI.color = pawnSave.TargetTemperaturesOverride ? Color.white : Color.grey;
             Widgets_FloatRange.FloatRange(sliderRect, 123123123, ref targetTemps, minMaxTemps, ToStringStyle.Temperature);
             GUI.color = Color.white;
 
@@ -112,11 +112,11 @@ namespace Outfitter
                 pawnStatCache.TargetTemperatures = targetTemps;
             }
 
-            if (pawnStatCache.targetTemperaturesOverride)
+            if (pawnSave.TargetTemperaturesOverride)
             {
                 if (Widgets.ButtonImage(tempResetRect, OutfitterTextures.resetButton))
                 {
-                    pawnStatCache.targetTemperaturesOverride = false;
+                    pawnSave.TargetTemperaturesOverride = false;
                     //   var saveablePawn = MapComponent_Outfitter.Get.GetCache(SelPawn);
                     //     saveablePawn.targetTemperaturesOverride = false;
                     pawnStatCache.UpdateTemperatureIfNecessary(true);
@@ -225,6 +225,9 @@ namespace Outfitter
                 // thing selected is a pawn
                 if (selectedPawn == null)
                 {
+                    Find.WindowStack.TryRemove(typeof(Window_PawnApparelDetail), false);
+                    Find.WindowStack.TryRemove(typeof(Window_Pawn_GearScore), false);
+
                     return false;
                 }
 
