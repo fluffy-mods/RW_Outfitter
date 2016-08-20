@@ -593,9 +593,9 @@ namespace Outfitter
                         maxComfyTemperature += t.CurrentData.statOffsets.First(se => se.stat == StatDefOf.ComfyTemperatureMax).value;
                     }
                 }
-                _temperatureWeight = _targetTemperatures.min > minComfyTemperature || _targetTemperatures.max > maxComfyTemperature ? 0.1f : 1f;
+            //    _temperatureWeight = _targetTemperatures.min > minComfyTemperature || _targetTemperatures.max > maxComfyTemperature ? 0.1f : 1f;
 
-           //     _temperatureWeight = _targetTemperatures.min > _pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMin, null) && _targetTemperatures.max < _pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMax, null) ? 0.1f : 1f;
+                _temperatureWeight = GenTemperature.OutdoorTemperatureAcceptableFor(_pawn.def) ? 0.25f : 1f;
             }
         }
 
