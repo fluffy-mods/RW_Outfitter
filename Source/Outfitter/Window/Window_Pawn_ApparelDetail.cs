@@ -121,9 +121,9 @@ namespace Outfitter
 
             GUI.BeginGroup(contentRect);
 
-            float baseValue = 100f;
-            float multiplierWidth = 100f;
-            float finalValue = 100f;
+            float baseValue = 90f;
+            float multiplierWidth = 90f;
+            float finalValue = 90f;
             float labelWidth = contentRect.width - baseValue - multiplierWidth - finalValue - 48f;
 
             Rect itemRect = new Rect(0f, contentRect.y, contentRect.width / 2, Text.LineHeight * 1.2f); //original groupRect.width -8f
