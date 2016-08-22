@@ -18,7 +18,7 @@ namespace Outfitter
 
         private const float TopPadding = 20f;
 
-        private const float ThingIconSize = 32f;
+        private const float ThingIconSize = 30f;
 
         private const float ThingRowHeight = 64f;
 
@@ -77,7 +77,7 @@ namespace Outfitter
             preventCameraMotion = false;
         }
 
-        public new Vector2 InitialSize = new Vector2(298f, 550f);
+        public new Vector2 InitialSize = new Vector2(338f, 550f);
 
         protected override void SetInitialSizeAndPosition()
         {
@@ -121,8 +121,20 @@ namespace Outfitter
                                              orderby ap.def.apparel.bodyPartGroups[0].listOrder descending
                                              select ap)
                 {
+                    var bp = "";
+                    var layer = "";
+                    foreach (var apparelLayer in current2.def.apparel.layers)
+                    {
+                        foreach (var bodyPartGroupDef in current2.def.apparel.bodyPartGroups)
+                        {
+                            bp += bodyPartGroupDef.LabelCap + " - ";
+                        }
+                        layer = apparelLayer.ToString();
+                    }
+                    Widgets.ListSeparator(ref num, viewRect.width, bp + layer);
                     DrawThingRowModded(ref num, viewRect.width, current2);
                 }
+
             }
 
 
@@ -214,7 +226,7 @@ namespace Outfitter
                             action = delegate
                             {
                                 InterfaceDrop(thing);
-                               // SelPawn.apparel.TryDrop(ap, out unused, SelPawn.Position, true);
+                                // SelPawn.apparel.TryDrop(ap, out unused, SelPawn.Position, true);
                             };
                         }
                         else if (eq != null && SelPawn.equipment.AllEquipment.Contains(eq))
@@ -246,7 +258,7 @@ namespace Outfitter
 
             if (thing.def.DrawMatSingle != null && thing.def.DrawMatSingle.mainTexture != null)
             {
-                Widgets.ThingIcon(new Rect(4f, y, ThingIconSize, ThingIconSize), thing);
+                Widgets.ThingIcon(new Rect(4f, y + 5f, ThingIconSize, ThingIconSize), thing);
             }
             Text.Anchor = TextAnchor.MiddleLeft;
             GUI.color = ThingLabelColor;
@@ -270,6 +282,7 @@ namespace Outfitter
                 Widgets.Label(scoreRect, text_Score);
             }
             y += ThingRowHeight;
+
         }
 
         private void DrawThingRowVanilla(ref float y, float width, Thing thing)
