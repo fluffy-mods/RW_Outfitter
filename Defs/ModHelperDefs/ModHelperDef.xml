@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
-    <ModHelperDef>
+  <CommunityCoreLibrary.ModHelperDef>
 
-        <defName>Outfitter</defName> 
-        <ModName>Outfitter</ModName> 
-        <version>0.12.5</version>  
-        <SpecialInjectors>        
-            <li>Outfitter.InjectDetour</li>
-        </SpecialInjectors>
-        <PostLoadInjectors>            
-            <li>Outfitter.InjectTab</li>
-        </PostLoadInjectors>
-    </ModHelperDef>
+    <defName>Outfitter</defName>
+    <ModName>Outfitter</ModName>
+    <minCCLversion>0.14.0</minCCLversion>
+    <PostLoadInjectors>
+    </PostLoadInjectors>
+    <SpecialInjectors>
+      <li>Outfitter.InjectTab</li>
+    </SpecialInjectors>
+    <MapComponents>
+      <li>Outfitter.MapComponent_Outfitter</li>
+    </MapComponents>
+  </CommunityCoreLibrary.ModHelperDef>
 </Defs>
