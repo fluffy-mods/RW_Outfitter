@@ -57,7 +57,7 @@
     <Compile Include="Buttons\TexButton.cs" />
     <Compile Include="Initializer\Bootstrap.cs" />
     <Compile Include="Window\Window_Pawn_GearScore.cs" />
-    <Compile Include="ITab_Pawn_AutoEquip.cs" />
+    <Compile Include="Window\ITab_Pawn_AutoEquip.cs" />
     <Compile Include="MainTabWindow_Outfitter.cs" />
     <Compile Include="MapComponent_Outfitter.cs" />
     <Compile Include="Initializer\ModInitializer.cs" />

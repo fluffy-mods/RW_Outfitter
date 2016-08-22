@@ -156,10 +156,11 @@ namespace Outfitter
             if (pawnSave.AddIndividualStats)
             {
                 #region MapConditions
-                //if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ToxicFallout>().Any())
-                //{
-                //    dict.Add(StatDefOf.ImmunityGainSpeed, 1f);
-                //}
+                if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ToxicFallout>().Any())
+                {
+                    dict.Add(StatDefOf.ToxicSensitivity, -1f);
+                    dict.Add(StatDef.Named("ArmorRating_Toxin"), -1f);
+                }
 
                 if (Find.MapConditionManager.ConditionIsActive(MapConditionDef.Named("PsychicDrone")))
                 {

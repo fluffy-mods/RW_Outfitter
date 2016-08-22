@@ -18,7 +18,7 @@ namespace Outfitter
 
         private const float TopPadding = 20f;
 
-        private const float ThingIconSize = 32f;
+        private const float ThingIconSize = 30f;
 
         private const float ThingRowHeight = 64f;
 
@@ -37,7 +37,29 @@ namespace Outfitter
         {
             get
             {
-                return SelPawn.RaceProps.ToolUser || SelPawn.inventory.container.Any();
+                if (!typeof(ITab_Pawn_Outfitter).IsVisible)
+                {
+                    return false;
+                }
+
+                // thing selected is a pawn
+                if (SelPawn == null)
+                {
+                    return false;
+                }
+
+                // of this colony
+                if (SelPawn.Faction != Faction.OfPlayer)
+                {
+                    return false;
+                }
+
+                // and has apparel (that should block everything without apparel, animals, bots, that sort of thing)
+                if (SelPawn.apparel == null)
+                {
+                    return false;
+                }
+                return true;
             }
         }
 
@@ -55,7 +77,7 @@ namespace Outfitter
             preventCameraMotion = false;
         }
 
-        public new Vector2 InitialSize = new Vector2(298f, 550f);
+        public new Vector2 InitialSize = new Vector2(338f, 550f);
 
         protected override void SetInitialSizeAndPosition()
         {
@@ -65,9 +87,8 @@ namespace Outfitter
 
         public override void WindowUpdate()
         {
-            if (SelPawn == null)
+            if (!IsVisible)
             {
-                
                 Close(false);
             }
         }
@@ -100,8 +121,20 @@ namespace Outfitter
                                              orderby ap.def.apparel.bodyPartGroups[0].listOrder descending
                                              select ap)
                 {
+                    var bp = "";
+                    var layer = "";
+                    foreach (var apparelLayer in current2.def.apparel.layers)
+                    {
+                        foreach (var bodyPartGroupDef in current2.def.apparel.bodyPartGroups)
+                        {
+                            bp += bodyPartGroupDef.LabelCap + " - ";
+                        }
+                        layer = apparelLayer.ToString();
+                    }
+                    Widgets.ListSeparator(ref num, viewRect.width, bp + layer);
                     DrawThingRowModded(ref num, viewRect.width, current2);
                 }
+
             }
 
 
@@ -192,7 +225,8 @@ namespace Outfitter
                             Apparel unused;
                             action = delegate
                             {
-                                SelPawn.apparel.TryDrop(ap, out unused, SelPawn.Position, true);
+                                InterfaceDrop(thing);
+                                // SelPawn.apparel.TryDrop(ap, out unused, SelPawn.Position, true);
                             };
                         }
                         else if (eq != null && SelPawn.equipment.AllEquipment.Contains(eq))
@@ -224,11 +258,11 @@ namespace Outfitter
 
             if (thing.def.DrawMatSingle != null && thing.def.DrawMatSingle.mainTexture != null)
             {
-                Widgets.ThingIcon(new Rect(4f, y, ThingIconSize, ThingIconSize), thing);
+                Widgets.ThingIcon(new Rect(4f, y + 5f, ThingIconSize, ThingIconSize), thing);
             }
             Text.Anchor = TextAnchor.MiddleLeft;
             GUI.color = ThingLabelColor;
-            Rect textRect = new Rect(ThingLeftX, y, width - ThingLeftX, ThingRowHeight-Text.LineHeight);
+            Rect textRect = new Rect(ThingLeftX, y, width - ThingLeftX, ThingRowHeight - Text.LineHeight);
             Rect scoreRect = new Rect(ThingLeftX, textRect.yMax, width - ThingLeftX, Text.LineHeight);
             #region Modded
             ApparelStatCache conf = new ApparelStatCache(SelPawn);
@@ -242,10 +276,13 @@ namespace Outfitter
             }
             else
             {
+                GUI.color = new Color(0.75f, 0.75f, 0.75f);
                 Widgets.Label(textRect, text);
+                GUI.color = Color.white;
                 Widgets.Label(scoreRect, text_Score);
             }
             y += ThingRowHeight;
+
         }
 
         private void DrawThingRowVanilla(ref float y, float width, Thing thing)
