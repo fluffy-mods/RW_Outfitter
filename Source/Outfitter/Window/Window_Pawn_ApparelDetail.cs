@@ -249,7 +249,7 @@ namespace Outfitter
             }
             foreach (ApparelStatCache.StatPriority statPriority in _pawn.GetApparelStatCache().StatCache.OrderBy(i => i.Stat.LabelCap))
             {
-                GUI.color = Color.yellow;
+                GUI.color = new Color(0.5f, 1f, 1f, 1f);
                 string statLabel = statPriority.Stat.LabelCap;
 
                 if (ApparelStatCache.infusedOffsets.Contains(statPriority.Stat))
@@ -301,6 +301,8 @@ namespace Outfitter
                 "+", multiplierWidth,
                 score.ToString("N2"), finalValue);
 
+
+
             score += conf.ApparelScoreRaw_Temperature(_apparel, _pawn) / 10;
 
             itemRect = new Rect(windowRect.x, itemRect.yMax, windowRect.width, Text.LineHeight * 1.2f);
@@ -335,6 +337,8 @@ namespace Outfitter
                 x.ToString("N2"), baseValue,
                 "weighted", multiplierWidth,
                 score.ToString("N2"), finalValue);
+
+                GUI.color = Color.white;
             }
 
 

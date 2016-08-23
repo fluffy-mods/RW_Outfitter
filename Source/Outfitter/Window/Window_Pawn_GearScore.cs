@@ -154,9 +154,9 @@ namespace Outfitter
 
         private void DrawThingRowModded(ref float y, float width, Thing thing)
         {
-            Apparel ap = thing as Apparel;
+            Apparel apparel = thing as Apparel;
 
-            if (ap == null)
+            if (apparel == null)
             {
                 DrawThingRowVanilla(ref y, width, thing);
                 return;
@@ -203,7 +203,7 @@ namespace Outfitter
                 //Left Mouse Button Menu
                 if (Event.current.button == 0)
                 {
-                    Find.WindowStack.Add(new Window_PawnApparelDetail(SelPawn, ap));
+                    Find.WindowStack.Add(new Window_PawnApparelDetail(SelPawn, apparel));
                 }
 
                 // RMB menu
@@ -220,7 +220,7 @@ namespace Outfitter
                         ThingWithComps eq = thing as ThingWithComps;
 
                         Action action = null;
-                        if (ap != null)
+                        if (apparel != null)
                         {
                             Apparel unused;
                             action = delegate
@@ -267,7 +267,8 @@ namespace Outfitter
             #region Modded
             ApparelStatCache conf = new ApparelStatCache(SelPawn);
             string text = thing.LabelCap;
-            string text_Score = Math.Round(conf.ApparelScoreRaw(ap, SelPawn), 2).ToString("N2");
+            string text_Score = Math.Round(conf.ApparelScoreRaw(apparel, SelPawn), 2).ToString("N2");
+
             #endregion
             if (thing is Apparel && SelPawn.outfits != null && SelPawn.outfits.forcedHandler.IsForced((Apparel)thing))
             {
@@ -277,6 +278,18 @@ namespace Outfitter
             else
             {
                 GUI.color = new Color(0.75f, 0.75f, 0.75f);
+                if (apparel.def.useHitPoints)
+                {
+                    float x = apparel.HitPoints / (float)apparel.MaxHitPoints;
+                    if (x < 0.5f)
+                    {
+                        GUI.color = Color.yellow;
+                    }
+                    if (x < 0.2f)
+                    {
+                        GUI.color = Color.red;
+                    }
+                }
                 Widgets.Label(textRect, text);
                 GUI.color = Color.white;
                 Widgets.Label(scoreRect, text_Score);
