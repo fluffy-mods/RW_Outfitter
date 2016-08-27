@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using RimWorld;
 using Verse;
 
 namespace Outfitter
@@ -43,7 +44,9 @@ namespace Outfitter
         public override void ExposeData()
         {
             Scribe_Collections.LookList(ref PawnCache, "Pawns", LookMode.Deep);
+
             base.ExposeData();
+
             if (PawnCache == null)
                 PawnCache = new List<SaveablePawn>();
         }

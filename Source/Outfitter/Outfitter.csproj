@@ -36,7 +36,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Community Core Library">
-      <HintPath>..\..\..\Community Core Library\Assemblies\Community Core Library.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\workshop\content\294100\729577707\Assemblies\Community Core Library.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -52,6 +52,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApparelStatCache.cs" />
+    <Compile Include="Window\Class1.cs" />
+    <Compile Include="Helper\HelperThingFilterUI.cs" />
     <Compile Include="Window\Window_Pawn_ApparelDetail.cs" />
     <Compile Include="Buttons\OutfitterButtons.cs" />
     <Compile Include="Buttons\TexButton.cs" />

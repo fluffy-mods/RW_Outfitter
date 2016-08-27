@@ -7,7 +7,7 @@ using Verse;
 
 namespace Outfitter
 {
-    public class Window_PawnApparelDetail : Window
+    public class Window_PawnApparelDetail : Verse.Window
     {
         private readonly Pawn _pawn;
         private readonly Apparel _apparel;

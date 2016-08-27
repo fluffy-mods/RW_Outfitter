@@ -9,7 +9,7 @@ using Verse.Sound;
 
 namespace Outfitter
 {
-    public sealed class Window_Pawn_GearScore : Window
+    public sealed class Window_Pawn_GearScore : Verse.Window
     {
         #region Modded 1
         private bool CanEdit { get { return SelPawn.IsColonistPlayerControlled; } }

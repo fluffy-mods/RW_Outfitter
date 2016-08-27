@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using CommunityCoreLibrary;
+using Outfitter.Window;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -48,10 +49,18 @@ namespace Outfitter
                                                                              BindingFlags.Static | BindingFlags.Public);
             MethodInfo destination = typeof(ApparelStatsHelper).GetMethod("ApparelScoreGain",
                                                                             BindingFlags.Static | BindingFlags.Public);
+
+            MethodInfo coreDialogManageOutfits = typeof(Dialog_ManageOutfits).GetMethod("DoWindowContents", 
+                BindingFlags.Instance | BindingFlags.Public);
+
+            MethodInfo outfitterDialogManageOutfits = typeof(Dialog_ManageOutfitsOutfitter).GetMethod("DoWindowContents", 
+                BindingFlags.Instance | BindingFlags.Public);
+
             try
             {
                 //       Detours.TryDetourFromTo(source, destination);
                 Detours.TryDetourFromTo(source, destination);
+                Detours.TryDetourFromTo(coreDialogManageOutfits, outfitterDialogManageOutfits);
             }
             catch (Exception)
             {

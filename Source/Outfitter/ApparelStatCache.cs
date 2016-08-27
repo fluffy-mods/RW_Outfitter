@@ -514,28 +514,29 @@ namespace Outfitter
                 // get desired temperatures
                 if (!pawnSave.TargetTemperaturesOverride)
                 {
-                    var temp = GenTemperature.AverageTemperatureAtWorldCoordsForMonth(Find.Map.WorldCoords, GenDate.CurrentMonth);
+                    var temp = GenTemperature.OutdoorTemp;
+               //     var temp = GenTemperature.AverageTemperatureAtWorldCoordsForMonth(Find.Map.WorldCoords, GenDate.CurrentMonth);
 
-                    pawnSave.TargetTemperatures = new FloatRange(Math.Max(temp - 12f, ApparelStatsHelper.MinMaxTemperatureRange.min),
-                                                          Math.Min(temp + 12f, ApparelStatsHelper.MinMaxTemperatureRange.max));
+                    pawnSave.TargetTemperatures = new FloatRange(Math.Max(temp - 8f, ApparelStatsHelper.MinMaxTemperatureRange.min),
+                                                          Math.Min(temp + 8f, ApparelStatsHelper.MinMaxTemperatureRange.max));
 
-                    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
-                    {
-                        pawnSave.TargetTemperatures.min += 20;
-                        pawnSave.TargetTemperatures.max += 20;
-                    }
-
-                    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
-                    {
-                        pawnSave.TargetTemperatures.min -= 20;
-                        pawnSave.TargetTemperatures.max -= 20;
-                    }
-
-                    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_VolcanicWinter>().Any())
-                    {
-                        pawnSave.TargetTemperatures.min -= 7;
-                        pawnSave.TargetTemperatures.max -= 7;
-                    }
+              //    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
+              //    {
+              //        pawnSave.TargetTemperatures.min += 20;
+              //        pawnSave.TargetTemperatures.max += 20;
+              //    }
+              //
+              //    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_ColdSnap>().Any())
+              //    {
+              //        pawnSave.TargetTemperatures.min -= 20;
+              //        pawnSave.TargetTemperatures.max -= 20;
+              //    }
+              //
+              //    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_VolcanicWinter>().Any())
+              //    {
+              //        pawnSave.TargetTemperatures.min -= 7;
+              //        pawnSave.TargetTemperatures.max -= 7;
+              //    }
                 }
 
                 //      pawnSave.Temperatureweight = GenTemperature.OutdoorTemperatureAcceptableFor(_pawn.def) ? 0.1f : 1f;
