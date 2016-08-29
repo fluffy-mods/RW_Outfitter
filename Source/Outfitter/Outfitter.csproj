@@ -16,11 +16,12 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <OutputPath>..\..\Assemblies\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -29,6 +30,15 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'NoCCL|AnyCPU'">
+    <OutputPath>..\..\Assemblies\</OutputPath>
+    <DefineConstants>TRACE;NoCCL</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
@@ -52,12 +62,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApparelStatCache.cs" />
+    <Compile Include="DetourAttribute.cs" />
+    <Compile Include="NoCCL\Detours.cs" />
+    <Compile Include="NoCCL\SpecialInjector.cs" />
+    <Compile Include="OF_SpecialInjector.cs" />
     <Compile Include="Window\Class1.cs" />
     <Compile Include="Helper\HelperThingFilterUI.cs" />
     <Compile Include="Window\Window_Pawn_ApparelDetail.cs" />
     <Compile Include="Buttons\OutfitterButtons.cs" />
     <Compile Include="Buttons\TexButton.cs" />
-    <Compile Include="Initializer\Bootstrap.cs" />
+    <None Include="Initializer\Bootstrap.cs" />
     <Compile Include="Window\Window_Pawn_GearScore.cs" />
     <Compile Include="Window\ITab_Pawn_AutoEquip.cs" />
     <Compile Include="MainTabWindow_Outfitter.cs" />

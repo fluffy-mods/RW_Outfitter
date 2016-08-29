@@ -16,7 +16,7 @@ namespace Outfitter
 
         public ModInitializer()
         {
-            _modInitializerControllerObject = new GameObject("ModInitializer");
+            _modInitializerControllerObject = new GameObject("Outfitter");
             _modInitializerControllerObject.AddComponent<ModInitializerBehaviour>();
             Object.DontDestroyOnLoad(_modInitializerControllerObject);
         }
@@ -59,8 +59,8 @@ namespace Outfitter
             try
             {
                 //       Detours.TryDetourFromTo(source, destination);
-                Detours.TryDetourFromTo(source, destination);
-                Detours.TryDetourFromTo(coreDialogManageOutfits, outfitterDialogManageOutfits);
+       //       Detours.TryDetourFromTo(source, destination);
+       //       Detours.TryDetourFromTo(coreDialogManageOutfits, outfitterDialogManageOutfits);
             }
             catch (Exception)
             {

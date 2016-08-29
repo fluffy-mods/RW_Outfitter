@@ -3,7 +3,7 @@
 	<name>Outfitter</name>
 	<author>Killface, Fluffy, soulkata</author>
 	<url>https://ludeon.com/forums/index.php?topic=20771.msg228262#msg228262</url>
-	<targetVersion>0.14.1234</targetVersion>
+	<targetVersion>0.15.1279</targetVersion>
 	<description>Allows pawns to factor in all kinds of gear stat offsets other than just armor.
    - Defaults to sensible priorities based on work types assigned and map seasonal temperatures.
    - Allows you to finetune, add and/or remove priorities.

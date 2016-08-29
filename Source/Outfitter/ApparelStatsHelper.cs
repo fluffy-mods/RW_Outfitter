@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using RimWorld;
 using Verse;
 
@@ -270,6 +271,7 @@ namespace Outfitter
             return dict;
         }
 
+        [Detour(typeof(JobGiver_OptimizeApparel), bindingFlags = (BindingFlags.Static | BindingFlags.Public))]
         public static float ApparelScoreGain(Pawn pawn, Apparel ap)
         {
             // only allow shields to be considered if a primary weapon is equipped and is melee

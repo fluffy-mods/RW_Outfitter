@@ -308,7 +308,7 @@ namespace Outfitter
             }
             GUI.color = _thingLabelColor;
             Rect rect2a = new Rect(rect.width - 24f, y, 24f, 24f);
-            TutorUIHighlighter.HighlightOpportunity("InfoCard", rect);
+            UIHighlighter.HighlightOpportunity(rect, "InfoCard");
             TooltipHandler.TipRegion(rect2a, "DefInfoTip".Translate());
             if (Widgets.ButtonImage(rect2a, LocalTextures.Info))
             {

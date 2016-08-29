@@ -1,8 +1,0 @@
-C:\Users\Killface\Source\Repos\RW_Outfitter\Assemblies\Outfitter.dll
-C:\Users\Killface\Source\Repos\RW_Outfitter\Source\Outfitter\obj\Debug\Outfitter.dll
-C:\Users\Killface\Desktop\RimWorld1135Win\Mods\RW_Outfitter\Assemblies\Outfitter.dll
-C:\Users\Killface\Desktop\RimWorld1135Win\Mods\RW_Outfitter\Source\Outfitter\obj\Debug\Outfitter.csprojResolveAssemblyReference.cache
-C:\Users\Killface\Desktop\RimWorld1135Win\Mods\RW_Outfitter\Source\Outfitter\obj\Debug\Outfitter.dll
-C:\Program Files (x86)\Steam\SteamApps\common\RimWorld\Mods\RW_Outfitter\Source\Outfitter\obj\Debug\Outfitter.csprojResolveAssemblyReference.cache
-C:\Program Files (x86)\Steam\SteamApps\common\RimWorld\Mods\RW_Outfitter\Source\Outfitter\obj\Debug\Outfitter.dll
-C:\Program Files (x86)\Steam\SteamApps\common\RimWorld\Mods\RW_Outfitter\Assemblies\Outfitter.dll

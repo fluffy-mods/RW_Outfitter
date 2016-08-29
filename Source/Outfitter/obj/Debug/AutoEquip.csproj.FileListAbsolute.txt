@@ -1,3 +1,0 @@
-C:\Program Files (x86)\Steam\SteamApps\common\RimWorld\Mods\RW_Outfitter\Assemblies\AutoEquip.dll
-C:\Program Files (x86)\Steam\SteamApps\common\RimWorld\Mods\RW_Outfitter\Source\Outfitter\obj\Debug\AutoEquip.dll
-C:\Program Files (x86)\Steam\SteamApps\common\RimWorld\Mods\RW_Outfitter\Source\Outfitter\obj\Debug\AutoEquip.csprojResolveAssemblyReference.cache

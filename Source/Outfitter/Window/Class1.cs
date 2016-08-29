@@ -65,7 +65,7 @@ namespace Outfitter.Window
         private string searchText = "";
         private bool isFocused;
 
-        //
+        [Detour(typeof(Dialog_ManageOutfits), bindingFlags = (BindingFlags.Instance | BindingFlags.Public))]
         public override void DoWindowContents(Rect inRect)
         {
             var num = 0f;
@@ -167,7 +167,7 @@ namespace Outfitter.Window
             {
                 searchText = string.Empty;
             }
-            TutorUIHighlighter.HighlightOpportunity("StoragePriority", rect);
+            UIHighlighter.HighlightOpportunity(rect, "StoragePriority");
 
 
             //        if (_apparelGlobalFilter != null)

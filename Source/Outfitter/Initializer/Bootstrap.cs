@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+#if NoCCL
+using Outfitter.NoCCL;
+#else
 using CommunityCoreLibrary;
-using RimWorld;
+#endif
 using Verse;
 
 namespace Outfitter
