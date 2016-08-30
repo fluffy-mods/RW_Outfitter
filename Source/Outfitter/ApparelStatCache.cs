@@ -344,10 +344,10 @@ namespace Outfitter
         {
             var pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
 
-         // float minComfyTemperature = pawnSave.RealComfyTemperatures.min;
-         // float maxComfyTemperature = pawnSave.RealComfyTemperatures.max;
-            float minComfyTemperature = pawn.ComfortableTemperatureRange().min;
-            float maxComfyTemperature = pawn.ComfortableTemperatureRange().max;
+            float minComfyTemperature = pawnSave.RealComfyTemperatures.min;
+            float maxComfyTemperature = pawnSave.RealComfyTemperatures.max;
+         // float minComfyTemperature = pawn.ComfortableTemperatureRange().min;
+         // float maxComfyTemperature = pawn.ComfortableTemperatureRange().max;
             // temperature
 
             FloatRange targetTemperatures = pawn.GetApparelStatCache().TargetTemperatures;
@@ -405,8 +405,6 @@ namespace Outfitter
                     temperatureScoreOffset += -(neededInsulation_Warmth - insulationHeat) * Math.Abs(tempWeight.max);
                 }
             }
-
-
 
             return temperatureScoreOffset;
         }
@@ -517,8 +515,8 @@ namespace Outfitter
                     var temp = GenTemperature.OutdoorTemp;
                //     var temp = GenTemperature.AverageTemperatureAtWorldCoordsForMonth(Find.Map.WorldCoords, GenDate.CurrentMonth);
 
-                    pawnSave.TargetTemperatures = new FloatRange(Math.Max(temp - 8f, ApparelStatsHelper.MinMaxTemperatureRange.min),
-                                                          Math.Min(temp + 8f, ApparelStatsHelper.MinMaxTemperatureRange.max));
+                    pawnSave.TargetTemperatures = new FloatRange(Math.Max(temp - 10f, ApparelStatsHelper.MinMaxTemperatureRange.min),
+                                                          Math.Min(temp + 10f, ApparelStatsHelper.MinMaxTemperatureRange.max));
 
               //    if (Find.MapConditionManager.ActiveConditions.OfType<MapCondition_HeatWave>().Any())
               //    {
