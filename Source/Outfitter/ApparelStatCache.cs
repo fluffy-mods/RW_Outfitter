@@ -280,7 +280,7 @@ namespace Outfitter
             }
             int apparelIndex = apparel.def.apparel.bodyPartGroups[0].listOrder;
 
-                score += ApparelScoreRaw_Temperature(apparel, pawn) / 10;
+                score += ApparelScoreRaw_Temperature(apparel, pawn) / 25;
 
             score += 0.05f * ApparelScoreRaw_ProtectionBaseStat(apparel);
 
@@ -344,10 +344,10 @@ namespace Outfitter
         {
             var pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
 
-            float minComfyTemperature = pawnSave.RealComfyTemperatures.min;
-            float maxComfyTemperature = pawnSave.RealComfyTemperatures.max;
-         // float minComfyTemperature = pawn.ComfortableTemperatureRange().min;
-         // float maxComfyTemperature = pawn.ComfortableTemperatureRange().max;
+         // float minComfyTemperature = pawnSave.RealComfyTemperatures.min;
+         // float maxComfyTemperature = pawnSave.RealComfyTemperatures.max;
+          float minComfyTemperature = pawn.ComfortableTemperatureRange().min;
+          float maxComfyTemperature = pawn.ComfortableTemperatureRange().max;
             // temperature
 
             FloatRange targetTemperatures = pawn.GetApparelStatCache().TargetTemperatures;
