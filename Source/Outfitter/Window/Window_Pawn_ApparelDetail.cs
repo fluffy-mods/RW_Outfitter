@@ -249,7 +249,7 @@ namespace Outfitter
             }
             foreach (ApparelStatCache.StatPriority statPriority in _pawn.GetApparelStatCache().StatCache.OrderBy(i => i.Stat.LabelCap))
             {
-                GUI.color = new Color(0.5f, 1f, 1f, 1f);
+                GUI.color = Color.green;//new Color(0.5f, 1f, 1f, 1f);
                 string statLabel = statPriority.Stat.LabelCap;
 
                 if (ApparelStatCache.infusedOffsets.Contains(statPriority.Stat))
