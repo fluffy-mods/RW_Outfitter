@@ -116,7 +116,7 @@ namespace Outfitter
             FloatRange minMaxTemps = ApparelStatsHelper.MinMaxTemperatureRange;
             Rect sliderRect = new Rect(cur.x, cur.y, canvas.width - 20f, 40f);
             Rect tempResetRect = new Rect(sliderRect.xMax + 4f, cur.y + 10f, 16f, 16f);
-            cur.y += 60f; // includes padding 
+            cur.y += 40f; // includes padding 
 
             // current temperature settings
             GUI.color = pawnSave.TargetTemperaturesOverride ? Color.white : Color.grey;

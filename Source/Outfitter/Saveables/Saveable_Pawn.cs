@@ -21,7 +21,7 @@ namespace Outfitter
         public FloatRange RealComfyTemperatures;
 
         public List<Saveable_Pawn_StatDef> Stats = new List<Saveable_Pawn_StatDef>();
-   //     public bool SetRealComfyTemperatures;
+        public bool SetRealComfyTemperatures;
 
         //  public SaveablePawn(Pawn pawn)
         //    {
@@ -37,7 +37,7 @@ namespace Outfitter
             Scribe_References.LookReference(ref Pawn, "Pawn");
             Scribe_Values.LookValue(ref TargetTemperaturesOverride, "targetTemperaturesOverride");
             Scribe_Values.LookValue(ref TargetTemperatures, "TargetTemperatures");
-     //       Scribe_Values.LookValue(ref SetRealComfyTemperatures, "SetRealComfyTemperatures");
+            Scribe_Values.LookValue(ref SetRealComfyTemperatures, "SetRealComfyTemperatures");
             Scribe_Values.LookValue(ref RealComfyTemperatures, "RealComfyTemperatures");
             Scribe_Values.LookValue(ref Temperatureweight, "Temperatureweight");
             Scribe_Collections.LookList(ref Stats, "Stats", LookMode.Deep);

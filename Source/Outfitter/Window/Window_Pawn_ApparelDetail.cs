@@ -303,12 +303,12 @@ namespace Outfitter
 
 
 
-            score += conf.ApparelScoreRaw_Temperature(_apparel, _pawn) / 10;
+            score += conf.ApparelScoreRaw_Temperature(_apparel, _pawn);
 
             itemRect = new Rect(windowRect.x, itemRect.yMax, windowRect.width, Text.LineHeight * 1.2f);
             DrawLine(ref itemRect,
                 "OutfitterTemperature".Translate(), labelWidth,
-                (conf.ApparelScoreRaw_Temperature(_apparel, _pawn) / 25).ToString("N2"), baseValue,
+                (conf.ApparelScoreRaw_Temperature(_apparel, _pawn)).ToString("N2"), baseValue,
                 "+", multiplierWidth,
                 score.ToString("N2"), finalValue);
 
