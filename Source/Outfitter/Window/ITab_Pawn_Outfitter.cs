@@ -45,7 +45,7 @@ namespace Outfitter
             var pawnSave = MapComponent_Outfitter.Get.GetCache(SelPawnForGear);
 
             // Outfit + Status button
-            Rect rectStatus = new Rect(10f, 10f, 120f, 30f);
+            Rect rectStatus = new Rect(10f, 15f, 120f, 30f);
 
             // select outfit
 
@@ -74,8 +74,6 @@ namespace Outfitter
             //show outfit
             rectStatus = new Rect(rectStatus.xMax + 10f, rectStatus.y, rectStatus.width, rectStatus.height);
 
-
-
             if (Widgets.ButtonText(rectStatus, "OutfitShow".Translate(), true, false))
             {
                 Find.WindowStack.Add(new Window_Pawn_GearScore());
@@ -83,11 +81,26 @@ namespace Outfitter
 
 
             // Status checkboxes
-            Rect rectCheckboxes = new Rect(10f, rectStatus.yMax + 15f, (size.x - 30f) / 2, rectStatus.height);
+            Rect rectCheckboxes = new Rect(10f, rectStatus.yMax + 15f, 130f, rectStatus.height);
             Text.Font= GameFont.Small;
-            pawnSave.AddWorkStats = GUI.Toggle(new Rect(rectCheckboxes), pawnSave.AddWorkStats, "AddWorkStats".Translate());
-            pawnSave.AddIndividualStats = GUI.Toggle(new Rect(rectCheckboxes.xMax+10f, rectCheckboxes.y,rectCheckboxes.width,rectCheckboxes.height),
+            pawnSave.AddWorkStats = GUI.Toggle(new Rect(10f, rectCheckboxes.y, 120f, rectCheckboxes.height), pawnSave.AddWorkStats, "AddWorkStats".Translate());
+            pawnSave.AddIndividualStats = GUI.Toggle(new Rect(140f, rectCheckboxes.y,rectCheckboxes.width+10f,rectCheckboxes.height),
                 pawnSave.AddIndividualStats, "AddIndividualStats".Translate());
+
+            Rect setWorkRect = new Rect(290f, rectCheckboxes.y, rectCheckboxes.width, rectCheckboxes.height);
+            if (Widgets.ButtonText(setWorkRect, pawnSave.mainJob.ToString()))
+            {
+                List<FloatMenuOption> options = new List<FloatMenuOption>();
+                foreach (SaveablePawn.MainJob mainJob in Enum.GetValues(typeof(SaveablePawn.MainJob)))
+                {
+                    options.Add(new FloatMenuOption(mainJob.ToString(), delegate
+                    {
+                        pawnSave.mainJob = mainJob;
+                        //pawnStatCache.Stats.Insert(0, new Saveable_Pawn_StatDef(def, 0f, StatAssignment.Manual));
+                    }));
+                }
+                Find.WindowStack.Add(new FloatMenu(options));
+            }
 
             // main canvas
             Rect canvas = new Rect(0f, 60f, size.x, size.y-60f).ContractedBy(20f);
@@ -142,6 +155,8 @@ namespace Outfitter
             }
             Text.Font = GameFont.Small;
             TryDrawComfyTemperatureRange(ref cur.y, canvas.width);
+
+
 
             // header
             Rect statsHeaderRect = new Rect(cur.x, cur.y, canvas.width, 30f);

@@ -20,6 +20,27 @@ namespace Outfitter
         public FloatRange TargetTemperatures;
         public FloatRange RealComfyTemperatures;
 
+        public enum MainJob
+        {
+            Anything,
+            Art,
+            Construction,
+            Cooking,
+            Crafting,
+            Doctor,
+            Growing,
+            Handling,
+            Hauling,
+            Hunting,
+            Mining,
+            Research,
+            Smithing,
+            Tailoring,
+            Warden
+        }
+
+        public MainJob mainJob;
+
         public List<Saveable_Pawn_StatDef> Stats = new List<Saveable_Pawn_StatDef>();
         public bool SetRealComfyTemperatures;
 
@@ -43,6 +64,7 @@ namespace Outfitter
             Scribe_Collections.LookList(ref Stats, "Stats", LookMode.Deep);
             Scribe_Values.LookValue(ref AddWorkStats, "AddWorkStats", true);
             Scribe_Values.LookValue(ref AddIndividualStats, "AddIndividualStats", true);
+            Scribe_Values.LookValue(ref mainJob, "mainJob");
 
 
         }
