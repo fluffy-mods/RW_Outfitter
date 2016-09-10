@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Outfitter.Window;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -213,39 +214,27 @@ namespace Outfitter
                     floatOptionList.Add(new FloatMenuOption("ThingInfo".Translate(), delegate
                     {
                         Find.WindowStack.Add(new Dialog_InfoCard(thing));
-                    }, MenuOptionPriority.Medium, null, null));
+                    }));
+
+                    floatOptionList.Add(new FloatMenuOption("OutfitterComparer".Translate(), delegate
+                    {
+                        Find.WindowStack.Add(new Dialog_PawnApparelComparer(SelPawn, apparel));
+                    }));
 
                     if (CanEdit)
                     {
-                        ThingWithComps eq = thing as ThingWithComps;
-
-                        Action action = null;
-                        if (apparel != null)
+                        Action dropApparel = delegate
                         {
-                            Apparel unused;
-                            action = delegate
-                            {
-                                InterfaceDrop(thing);
-                                // SelPawn.apparel.TryDrop(ap, out unused, SelPawn.Position, true);
-                            };
-                        }
-                        else if (eq != null && SelPawn.equipment.AllEquipment.Contains(eq))
+                            SoundDefOf.TickHigh.PlayOneShotOnCamera();
+                            InterfaceDrop(thing);
+                        };
+                        Action dropApparelHaul = delegate
                         {
-                            ThingWithComps unused;
-                            action = delegate
-                            {
-                                SelPawn.equipment.TryDropEquipment(eq, out unused, SelPawn.Position, true);
-                            };
-                        }
-                        else if (!thing.def.destroyOnDrop)
-                        {
-                            Thing unused;
-                            action = delegate
-                            {
-                                SelPawn.inventory.container.TryDrop(thing, SelPawn.Position, ThingPlaceMode.Near, out unused);
-                            };
-                        }
-                        floatOptionList.Add(new FloatMenuOption("DropThing".Translate(), action, MenuOptionPriority.Medium, null, null));
+                            SoundDefOf.TickHigh.PlayOneShotOnCamera();
+                            InterfaceDropHaul(thing);
+                        };
+                        floatOptionList.Add(new FloatMenuOption("DropThing".Translate(), dropApparel));
+                        floatOptionList.Add(new FloatMenuOption("DropThingHaul".Translate(), dropApparelHaul));
                     }
 
                     FloatMenu window = new FloatMenu(floatOptionList, "");
@@ -359,15 +348,41 @@ namespace Outfitter
             else if (thingWithComps != null && SelPawn.equipment.AllEquipment.Contains(thingWithComps))
             {
                 ThingWithComps thingWithComps2;
-                SelPawn.equipment.TryDropEquipment(thingWithComps, out thingWithComps2, SelPawn.Position, true);
+                SelPawn.equipment.TryDropEquipment(thingWithComps, out thingWithComps2, SelPawn.Position);
             }
             else if (!t.def.destroyOnDrop)
             {
                 Thing thing;
-                SelPawn.inventory.container.TryDrop(t, SelPawn.Position, ThingPlaceMode.Near, out thing, null);
+                SelPawn.inventory.container.TryDrop(t, SelPawn.Position, ThingPlaceMode.Near, out thing);
             }
         }
 
+        private void InterfaceDropHaul(Thing t)
+        {
+            ThingWithComps thingWithComps = t as ThingWithComps;
+            Apparel apparel = t as Apparel;
+            if (apparel != null)
+            {
+                Pawn selPawnForGear = SelPawn;
+                if (selPawnForGear.drafter.CanTakeOrderedJob())
+                {
+                    Job job = new Job(JobDefOf.RemoveApparel, apparel);
+                    job.playerForced = true;
+                    job.haulDroppedApparel = true;
+                    selPawnForGear.drafter.TakeOrderedJob(job);
+                }
+            }
+            else if (thingWithComps != null && SelPawn.equipment.AllEquipment.Contains(thingWithComps))
+            {
+                ThingWithComps thingWithComps2;
+                SelPawn.equipment.TryDropEquipment(thingWithComps, out thingWithComps2, SelPawn.Position);
+            }
+            else if (!t.def.destroyOnDrop)
+            {
+                Thing thing;
+                SelPawn.inventory.container.TryDrop(t, SelPawn.Position, ThingPlaceMode.Near, out thing);
+            }
+        }
 
     }
 }

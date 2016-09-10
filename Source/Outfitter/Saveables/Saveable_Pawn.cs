@@ -20,22 +20,26 @@ namespace Outfitter
         public FloatRange TargetTemperatures;
         public FloatRange RealComfyTemperatures;
 
+        public bool forceStatUpdate = false;
+
         public enum MainJob
         {
             Anything,
-            Art,
-            Construction,
-            Cooking,
-            Crafting,
+            Soldier00Close_Combat,
+            Soldier00Ranged_Combat,
+            Artist,
+            Constructor,
+            Cook,
+            Crafter,
             Doctor,
-            Growing,
-            Handling,
-            Hauling,
-            Hunting,
-            Mining,
-            Research,
-            Smithing,
-            Tailoring,
+            Grower,
+            Handler,
+            Hauler,
+            Hunter,
+            Miner,
+            Researcher,
+            Smith,
+            Tailor,
             Warden
         }
 

@@ -66,7 +66,8 @@
     <Compile Include="NoCCL\Detours.cs" />
     <Compile Include="NoCCL\SpecialInjector.cs" />
     <Compile Include="OF_SpecialInjector.cs" />
-    <Compile Include="Window\Class1.cs" />
+    <Compile Include="Window\Dialog_PawnApparelComparer.cs" />
+    <Compile Include="Window\Dialog_ManageOutfitsOutfitter.cs" />
     <Compile Include="Helper\HelperThingFilterUI.cs" />
     <Compile Include="Window\Window_Pawn_ApparelDetail.cs" />
     <Compile Include="Buttons\OutfitterButtons.cs" />

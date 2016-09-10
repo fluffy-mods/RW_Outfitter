@@ -4,6 +4,7 @@ using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
+using Verse.AI;
 
 namespace Outfitter
 {
@@ -88,18 +89,23 @@ namespace Outfitter
                 pawnSave.AddIndividualStats, "AddIndividualStats".Translate());
 
             Rect setWorkRect = new Rect(290f, rectCheckboxes.y, rectCheckboxes.width, rectCheckboxes.height);
-            if (Widgets.ButtonText(setWorkRect, pawnSave.mainJob.ToString()))
+            if (Widgets.ButtonText(setWorkRect, pawnSave.mainJob.ToString().Replace("00", " - ").Replace("_", " ")))
             {
                 List<FloatMenuOption> options = new List<FloatMenuOption>();
                 foreach (SaveablePawn.MainJob mainJob in Enum.GetValues(typeof(SaveablePawn.MainJob)))
                 {
-                    options.Add(new FloatMenuOption(mainJob.ToString(), delegate
+                    options.Add(new FloatMenuOption(mainJob.ToString().Replace("00", " - ").Replace("_", " "), delegate
                     {
                         pawnSave.mainJob = mainJob;
+                        pawnSave.forceStatUpdate = true;
+                        
+                        SelPawnForGear.mindState.nextApparelOptimizeTick = -99999;
                         //pawnStatCache.Stats.Insert(0, new Saveable_Pawn_StatDef(def, 0f, StatAssignment.Manual));
                     }));
                 }
-                Find.WindowStack.Add(new FloatMenu(options));
+                FloatMenu window = new FloatMenu(options, "MainJob".Translate());
+
+                Find.WindowStack.Add(window);
             }
 
             // main canvas

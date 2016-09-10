@@ -23,8 +23,11 @@
   <AppendIndividualStats>Append Individual Status</AppendIndividualStats>
   <OutfitterEditOutfit>Edit Outfit...</OutfitterEditOutfit>
   <OutfitterStatus>Status...</OutfitterStatus>
-  <EquipmentAndInventory>Equipment And Inventory</EquipmentAndInventory>
+  <EquipmentAndInventory>Equipment and Inventory</EquipmentAndInventory>
   <WornApparel>Worn Apparel</WornApparel>
   <AddWorkStats>Add Work Stats</AddWorkStats>
   <AddIndividualStats>Add Individual Stats</AddIndividualStats>
+  <DropThingHaul>Drop and Haul</DropThingHaul>
+  <MainJob>Set Preferred Outfit</MainJob>
+  <OutfitterComparer>Compare Apparel Score</OutfitterComparer>
 </LanguageData>
