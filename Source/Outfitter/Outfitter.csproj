@@ -70,8 +70,8 @@
     <Compile Include="Window\Dialog_ManageOutfitsOutfitter.cs" />
     <Compile Include="Helper\HelperThingFilterUI.cs" />
     <Compile Include="Window\Window_Pawn_ApparelDetail.cs" />
-    <Compile Include="Buttons\OutfitterButtons.cs" />
-    <Compile Include="Buttons\TexButton.cs" />
+    <Compile Include="Buttons\OutfitterTextures.cs" />
+    <Compile Include="Buttons\LocalTextures.cs" />
     <None Include="Initializer\Bootstrap.cs" />
     <Compile Include="Window\Window_Pawn_GearScore.cs" />
     <Compile Include="Window\ITab_Pawn_Outfitter.cs" />

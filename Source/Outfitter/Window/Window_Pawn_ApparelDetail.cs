@@ -120,9 +120,15 @@ namespace Outfitter
             padding = new RectOffset(0, 0, 12, 6)
         };
 
+
+
         GUIStyle hoverBox = new GUIStyle
         {
-            hover = { background = SolidColorMaterials.NewSolidColorTexture(new Color(0.2f, 0.2f, 0.2f, 1)) }
+            hover = { background = OutfitterTextures.BGColor }
+        };
+        GUIStyle whiteLine = new GUIStyle
+        {
+            normal = { background = OutfitterTextures.White }
         };
 
         public override void DoWindowContents(Rect windowRect)
@@ -154,6 +160,10 @@ namespace Outfitter
                 "Strengh", multiplierWidth,
                 "Score", finalValue, FontBold);
 
+            Space(6f);
+            Label("", whiteLine, Height(1));
+            Space(6f);
+
             HashSet<StatDef> equippedOffsets = new HashSet<StatDef>();
             if (_apparel.def.equippedStatOffsets != null)
             {
@@ -175,22 +185,6 @@ namespace Outfitter
             foreach (ApparelStatCache.StatPriority statPriority in _pawn.GetApparelStatCache().StatCache)
                 ApparelStatCache.FillInfusionHashset_PawnStatsHandlers(_pawn, _apparel, statPriority.Stat);
 
-            // Rect scrollviewRect = contentRect;
-            //
-            // scrollviewRect.yMin += Text.LineHeight * 2f;
-            // scrollviewRect.height -= Text.LineHeight;
-            //
-            //
-            // viewRect.height = (equippedOffsets.Count + statBases.Count + ApparelStatCache.infusedOffsets.Count) * Text.LineHeight * 1.2f + 16f;
-            // if (viewRect.height > scrollviewRect.height)
-            // {
-            //     viewRect.width -= 20f;
-            // }
-
-            // Detail list scrollable
-
-            //     Widgets.BeginScrollView(scrollviewRect, ref _scrollPosition, viewRect);
-            //     GUI.BeginGroup(viewRect);
             _scrollPosition = BeginScrollView(_scrollPosition, Width(conRect.width));
             // relevant apparel stats
 
@@ -199,9 +193,6 @@ namespace Outfitter
             float score = 1;
 
             // add values for each statdef modified by the apparel
-
-
-
             foreach (ApparelStatCache.StatPriority statPriority in _pawn.GetApparelStatCache().StatCache.OrderBy(i => i.Stat.LabelCap))
             {
 
@@ -278,7 +269,9 @@ namespace Outfitter
 
             // begin lower group
             FlexibleSpace();
-            Space(12f);
+            Space(6f);
+            Label("", whiteLine, Height(1));
+            Space(6f);
             DrawLine(
                 "", labelWidth,
                 "Modifier", baseValue,
