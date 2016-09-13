@@ -1,11 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-	<name>Outfitter</name>
-	<author>Fluffy</author>
-	<url></url>
-	<targetVersion>Alpha 12d</targetVersion>
-	<description>Allows pawns to factor in all kinds of gear stat offsets other than just armor.
-	 - Defaults to sensible priorities based on work types assigned and map seasonal temperatures.
-	 - Allows you to finetune, add and/or remove priorities.
-	 - No naked pawns!</description>
+	<name>Outfitter A15</name>
+	<author>Killface</author>
+	<url>https://ludeon.com/forums/index.php?topic=20771.msg228262#msg228262</url>
+	<targetVersion>0.15.1280</targetVersion>
+	<description>
+Allows pawns to factor in all kinds of gear stat offsets other than just armor.
+- Defaults to sensible priorities based on work types assigned and map seasonal temperatures.
+- Allows you to finetune, add and/or remove priorities.
+- Takes personal traits like temperature preference or mental states into account.
+- No naked pawns!
+
+Original version of 'Outfitter™' by Fluffy. Original version of 'AutoEquip™' by soulkata.
+This is a fusion of both mods.
+
+Patch for the Infused mod:
+http://steamcommunity.com/sharedfiles/filedetails/?id=738208470
+  </description>
 </ModMetaData>
